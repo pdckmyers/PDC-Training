@@ -40,14 +40,12 @@ export default async function ModuleDetailPage({
       </div>
 
       {mod.image_url && (
-        <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-stone-200">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={mod.image_url}
-            alt=""
-            className="h-full w-full object-cover"
-          />
-        </div>
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={mod.image_url}
+          alt=""
+          className="w-full rounded-lg border border-stone-200"
+        />
       )}
 
       {mod.video_url && <VideoEmbed url={mod.video_url} />}
