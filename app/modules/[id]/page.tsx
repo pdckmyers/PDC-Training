@@ -60,7 +60,7 @@ export default async function ModuleDetailPage({
         <img
           src={mod.image_url}
           alt=""
-          className="w-full rounded-lg border border-stone-200"
+          className="h-auto max-w-full rounded-lg border border-stone-200"
         />
       )}
 
