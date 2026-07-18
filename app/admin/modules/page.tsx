@@ -49,7 +49,7 @@ export default async function AdminModulesPage() {
                 <p className="mt-0.5 text-sm text-stone-500">
                   {mod.department_id
                     ? departmentLabel.get(mod.department_id) ?? "Unknown department"
-                    : "General — all hires"}
+                    : "General — all employees"}
                   {" · "}
                   {mod.quiz.length} question{mod.quiz.length === 1 ? "" : "s"}
                 </p>

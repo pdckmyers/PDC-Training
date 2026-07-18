@@ -25,7 +25,7 @@ export default async function AdminLocationsPage() {
       </h1>
       <p className="mb-8 text-stone-600">
         Add a location, then the departments under it. Each department gets
-        its own invite link you can send a new hire so they land straight in
+        its own invite link you can send a new employee so they land straight in
         their training.
       </p>
       <LocationsManager

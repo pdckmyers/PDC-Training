@@ -215,13 +215,13 @@ export default function ModuleForm({
       </label>
 
       <label className="flex flex-col gap-1 text-sm text-stone-700">
-        Department (leave blank to show this to every hire regardless of department)
+        Department (leave blank to show this to every employee regardless of department)
         <select
           value={departmentId}
           onChange={(e) => setDepartmentId(e.target.value)}
           className="rounded-md border border-stone-300 px-3 py-2 text-stone-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
         >
-          <option value="">General (all hires)</option>
+          <option value="">General (all employees)</option>
           {departments.map((d) => (
             <option key={d.id} value={d.id}>
               {d.label}
@@ -237,7 +237,7 @@ export default function ModuleForm({
           onChange={(e) => setPublished(e.target.checked)}
           className="text-brand focus:ring-brand"
         />
-        Published (visible to new hires)
+        Published (visible to employees)
       </label>
 
       <div className="border-t border-stone-200 pt-6">
@@ -256,7 +256,7 @@ export default function ModuleForm({
 
         {quiz.length === 0 && (
           <p className="text-sm text-stone-500">
-            No quiz — hires just mark this module complete after reading it.
+            No quiz — employees just mark this module complete after reading it.
           </p>
         )}
 
