@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import type { Completion, Module } from "@/lib/types";
+import type { Completion, Module, Profile } from "@/lib/types";
 
 export default async function ModulesPage() {
   const supabase = await createClient();
@@ -8,12 +8,23 @@ export default async function ModulesPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: modules } = await supabase
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user!.id)
+    .single<Profile>();
+
+  let modulesQuery = supabase
     .from("modules")
     .select("*")
     .eq("published", true)
-    .order("sort_order", { ascending: true })
-    .returns<Module[]>();
+    .order("sort_order", { ascending: true });
+
+  modulesQuery = profile?.department_id
+    ? modulesQuery.or(`department_id.eq.${profile.department_id},department_id.is.null`)
+    : modulesQuery.is("department_id", null);
+
+  const { data: modules } = await modulesQuery.returns<Module[]>();
 
   const { data: completions } = await supabase
     .from("completions")

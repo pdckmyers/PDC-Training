@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Module } from "@/lib/types";
+import { getDepartmentOptions } from "@/lib/departments";
 import ModuleForm from "@/components/ModuleForm";
 
 export default async function EditModulePage({
@@ -19,12 +20,14 @@ export default async function EditModulePage({
 
   if (!mod) notFound();
 
+  const departments = await getDepartmentOptions();
+
   return (
     <div>
       <h1 className="mb-6 text-2xl font-semibold text-stone-900">
         Edit module
       </h1>
-      <ModuleForm existing={mod} />
+      <ModuleForm existing={mod} departments={departments} />
     </div>
   );
 }
