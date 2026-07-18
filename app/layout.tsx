@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "PDC Training",
-  description: "New hire training for PDC",
+  description: "Employee training for PDC",
 };
 
 export default function RootLayout({

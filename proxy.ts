@@ -47,7 +47,11 @@ export async function proxy(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    if (profile?.role !== "admin") {
+    const isAdmin = profile?.role === "admin";
+    const isManagerOnProgress =
+      profile?.role === "manager" && path.startsWith("/admin/progress");
+
+    if (!isAdmin && !isManagerOnProgress) {
       const url = request.nextUrl.clone();
       url.pathname = "/modules";
       return NextResponse.redirect(url);

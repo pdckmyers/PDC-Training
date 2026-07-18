@@ -37,7 +37,7 @@ export default async function ProgressPage() {
 
       {(!profiles || profiles.length === 0) && (
         <p className="rounded-lg border border-dashed border-stone-300 p-6 text-stone-500">
-          No hires have signed up yet.
+          No employees have signed up yet.
         </p>
       )}
 

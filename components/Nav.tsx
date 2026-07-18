@@ -17,6 +17,7 @@ export default async function Nav() {
     .single();
 
   const isAdmin = profile?.role === "admin";
+  const isManager = profile?.role === "manager";
 
   return (
     <header className="border-b border-stone-200 bg-white">
@@ -43,12 +44,20 @@ export default async function Nav() {
                 Locations
               </Link>
               <Link
-                href="/admin/progress"
+                href="/admin/team"
                 className="text-sm text-stone-600 hover:text-stone-900"
               >
-                Progress
+                Team
               </Link>
             </>
+          )}
+          {(isAdmin || isManager) && (
+            <Link
+              href="/admin/progress"
+              className="text-sm text-stone-600 hover:text-stone-900"
+            >
+              Progress
+            </Link>
           )}
         </div>
         <div className="flex items-center gap-4">
