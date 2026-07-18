@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Completion, Module, Profile } from "@/lib/types";
+import { sanitizeModuleBody } from "@/lib/sanitize";
 import VideoEmbed from "@/components/VideoEmbed";
 import ModuleCompletion from "@/components/ModuleCompletion";
 
@@ -65,9 +66,10 @@ export default async function ModuleDetailPage({
       {mod.video_url && <VideoEmbed url={mod.video_url} />}
 
       {mod.body && (
-        <div className="whitespace-pre-wrap leading-relaxed text-stone-800">
-          {mod.body}
-        </div>
+        <div
+          className="leading-relaxed text-stone-800 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1"
+          dangerouslySetInnerHTML={{ __html: sanitizeModuleBody(mod.body) }}
+        />
       )}
 
       <ModuleCompletion
