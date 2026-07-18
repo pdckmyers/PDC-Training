@@ -1,55 +1,69 @@
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import type { Module } from "@/lib/types";
+import type { Day, Department, Location, Module } from "@/lib/types";
 
-type ModuleWithDay = Module & {
-  days: {
-    title: string;
-    departments: { name: string; locations: { name: string } | null } | null;
-  } | null;
-};
-
-function locationLabel(mod: ModuleWithDay): string {
-  if (!mod.days) return "General — all employees";
-  const locationName = mod.days.departments?.locations?.name ?? "";
-  const departmentName = mod.days.departments?.name ?? "";
-  return [locationName, departmentName, mod.days.title].filter(Boolean).join(" — ");
-}
-
-export default async function AdminModulesPage() {
+export default async function DayPage({
+  params,
+}: {
+  params: Promise<{ dayId: string }>;
+}) {
+  const { dayId } = await params;
   const supabase = await createClient();
 
-  const { data: modules } = await supabase
-    .from("modules")
-    .select("*, days(title, departments(name, locations(name)))")
-    .order("sort_order", { ascending: true })
-    .returns<ModuleWithDay[]>();
+  const { data: day } = await supabase
+    .from("days")
+    .select("*")
+    .eq("id", dayId)
+    .single<Day>();
+
+  if (!day) notFound();
+
+  const [{ data: department }, { data: modules }] = await Promise.all([
+    supabase
+      .from("departments")
+      .select("*")
+      .eq("id", day.department_id)
+      .single<Department>(),
+    supabase
+      .from("modules")
+      .select("*")
+      .eq("day_id", dayId)
+      .order("sort_order", { ascending: true })
+      .returns<Module[]>(),
+  ]);
+
+  const { data: location } = department
+    ? await supabase
+        .from("locations")
+        .select("*")
+        .eq("id", department.location_id)
+        .single<Location>()
+    : { data: null };
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-stone-900">
-          Manage modules
-        </h1>
+      {department && (
         <Link
-          href="/admin/modules/new"
+          href={`/admin/departments/${department.id}`}
+          className="mb-2 inline-block text-sm text-brand-dark hover:underline"
+        >
+          ← {location?.name} — {department.name}
+        </Link>
+      )}
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-stone-900">{day.title}</h1>
+        <Link
+          href={`/admin/days/${dayId}/modules/new`}
           className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"
         >
-          New general module
+          New module
         </Link>
       </div>
-      <p className="mb-6 text-sm text-stone-500">
-        Every module across every location, department, and day. To add a
-        module inside a specific day, go to{" "}
-        <Link href="/admin/locations" className="text-brand-dark underline">
-          Locations
-        </Link>{" "}
-        and open that day&rsquo;s folder instead.
-      </p>
 
       {(!modules || modules.length === 0) && (
         <p className="rounded-lg border border-dashed border-stone-300 p-6 text-stone-500">
-          No modules yet. Create the first one.
+          No modules in this day yet.
         </p>
       )}
 
@@ -63,8 +77,6 @@ export default async function AdminModulesPage() {
               <div>
                 <h2 className="font-medium text-stone-900">{mod.title}</h2>
                 <p className="mt-0.5 text-sm text-stone-500">
-                  {locationLabel(mod)}
-                  {" · "}
                   {mod.quiz.length} question{mod.quiz.length === 1 ? "" : "s"}
                 </p>
               </div>

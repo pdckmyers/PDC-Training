@@ -22,6 +22,14 @@ export interface Department {
   created_at: string;
 }
 
+export interface Day {
+  id: string;
+  department_id: string;
+  title: string;
+  sort_order: number;
+  created_at: string;
+}
+
 export interface QuizQuestion {
   question: string;
   options: string[];
@@ -38,7 +46,7 @@ export interface Module {
   quiz: QuizQuestion[];
   published: boolean;
   sort_order: number;
-  department_id: string | null;
+  day_id: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
