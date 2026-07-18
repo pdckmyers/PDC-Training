@@ -25,3 +25,19 @@ export function toEditableHtml(body: string): string {
     .replace(/>/g, "&gt;")
     .replace(/\n/g, "<br>");
 }
+
+/**
+ * Admins can insert a page break (an <hr>) in the editor to split a long
+ * module into multiple screens. Split on those markers -- consuming
+ * them, not rendering them -- and sanitize each resulting page.
+ */
+const LEADING_OR_TRAILING_BR = /^(\s|<br\s*\/?>)+|(\s|<br\s*\/?>)+$/gi;
+
+export function splitModuleBodyIntoPages(body: string): string[] {
+  if (!body) return [];
+
+  return toEditableHtml(body)
+    .split(/<hr[^>]*>/i)
+    .map((page) => sanitizeModuleBody(page).replace(LEADING_OR_TRAILING_BR, "").trim())
+    .filter((page) => page.length > 0);
+}
