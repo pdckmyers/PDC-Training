@@ -341,11 +341,20 @@ export default function ModuleForm({
           {saving ? "Saving..." : existing ? "Save changes" : "Create module"}
         </button>
         {existing && (
+          <Link
+            href={`/modules/${existing.id}`}
+            target="_blank"
+            className="text-sm text-brand-dark hover:underline"
+          >
+            View live ↗
+          </Link>
+        )}
+        {existing && (
           <button
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="text-sm text-red-600 hover:underline disabled:opacity-60"
+            className="ml-auto text-sm text-red-600 hover:underline disabled:opacity-60"
           >
             {deleting ? "Deleting..." : "Delete module"}
           </button>

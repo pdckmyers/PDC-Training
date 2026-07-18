@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { Completion, Module } from "@/lib/types";
+import type { Completion, Module, Profile } from "@/lib/types";
 import VideoEmbed from "@/components/VideoEmbed";
 import ModuleCompletion from "@/components/ModuleCompletion";
 
@@ -21,7 +21,15 @@ export default async function ModuleDetailPage({
     .eq("id", id)
     .single<Module>();
 
-  if (!mod || !mod.published) notFound();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user!.id)
+    .single<Profile>();
+
+  const canPreviewDrafts = profile?.role === "admin";
+
+  if (!mod || (!mod.published && !canPreviewDrafts)) notFound();
 
   const { data: completion } = await supabase
     .from("completions")
@@ -32,6 +40,12 @@ export default async function ModuleDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
+      {!mod.published && (
+        <p className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-800">
+          Draft preview — employees can&rsquo;t see this until you publish it.
+        </p>
+      )}
+
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">{mod.title}</h1>
         {mod.description && (
