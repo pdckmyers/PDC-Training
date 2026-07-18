@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { Module, QuizQuestion } from "@/lib/types";
+import { toEditableHtml } from "@/lib/sanitize";
+import RichTextEditor from "@/components/RichTextEditor";
 
 function emptyQuestion(): QuizQuestion {
   return { question: "", options: ["", ""], correct_index: 0 };
@@ -28,7 +30,7 @@ export default function ModuleForm({
 
   const [title, setTitle] = useState(existing?.title ?? "");
   const [description, setDescription] = useState(existing?.description ?? "");
-  const [body, setBody] = useState(existing?.body ?? "");
+  const [body, setBody] = useState(toEditableHtml(existing?.body ?? ""));
   const [imageUrl, setImageUrl] = useState(existing?.image_url ?? "");
   const [videoUrl, setVideoUrl] = useState(existing?.video_url ?? "");
   const [sortOrder, setSortOrder] = useState(existing?.sort_order ?? 0);
@@ -178,15 +180,10 @@ export default function ModuleForm({
         />
       </label>
 
-      <label className="flex flex-col gap-1 text-sm text-stone-700">
+      <div className="flex flex-col gap-1 text-sm text-stone-700">
         Main content
-        <textarea
-          rows={8}
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          className="rounded-md border border-stone-300 px-3 py-2 text-stone-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-        />
-      </label>
+        <RichTextEditor value={body} onChange={setBody} />
+      </div>
 
       <label className="flex flex-col gap-1 text-sm text-stone-700">
         Image URL (optional)
