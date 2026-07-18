@@ -110,10 +110,32 @@ For those, explain what you want to do and why, then wait for a yes.
 
 ## 7. Tech stack / project notes
 
-*(Fill in as the project takes shape — framework, Supabase project name,
-Vercel project name, key folders, etc. Keep this section current so future
-sessions don't have to rediscover it.)*
+**What this is:** a new-hire training app. Admins author modules (text,
+optional image, optional video, optional multiple-choice quiz); hires log in,
+work through published modules, and their completions/quiz scores are
+tracked so admins can see who's finished what.
 
-- Hosting: Vercel (auto-deploys `main`)
-- Database/auth/storage: Supabase
+- **Framework:** Next.js 16 (App Router, Turbopack), TypeScript, Tailwind CSS.
+- **Auth/DB:** Supabase — email/password auth, Postgres with row-level
+  security. Schema lives in `supabase/migrations/0001_init.sql`:
+  - `profiles` (id, email, full_name, role: `hire`|`admin`) — a trigger
+    creates this automatically on signup; **the very first person to sign up
+    becomes admin**, everyone after that defaults to `hire`.
+  - `modules` (title, description, body, image_url, video_url, quiz jsonb,
+    published, sort_order, created_by) — quiz is an array of
+    `{ question, options[], correct_index }`.
+  - `completions` (user_id, module_id, quiz_score, quiz_total,
+    completed_at) — one row per hire per module.
+- **Routes:** `/login`, `/signup`, `/modules` (list + detail for hires),
+  `/admin/modules` (list/create/edit/delete, admin-only),
+  `/admin/progress` (completion matrix, admin-only). `proxy.ts` (Next 16's
+  renamed middleware convention) gates everything behind auth and gates
+  `/admin/*` behind the admin role.
+- **Hosting:** Vercel (auto-deploys `main` once the repo is imported there).
+- **Env vars needed:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  (see `.env.local.example`) — set in Vercel project settings, not committed.
+- **Not yet applied:** the Supabase migration hasn't been run against a real
+  project yet (no Supabase connector connected as of this writing). Apply it
+  via the Supabase MCP connector as soon as it's available, then wire the
+  env vars into Vercel — don't ask the owner to run SQL by hand.
 - Repo: `pdckmyers/PDC-Training`
