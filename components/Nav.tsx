@@ -37,6 +37,12 @@ export default async function Nav() {
                 Manage modules
               </Link>
               <Link
+                href="/admin/locations"
+                className="text-sm text-stone-600 hover:text-stone-900"
+              >
+                Locations
+              </Link>
+              <Link
                 href="/admin/progress"
                 className="text-sm text-stone-600 hover:text-stone-900"
               >

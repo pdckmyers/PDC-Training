@@ -5,6 +5,20 @@ export interface Profile {
   email: string;
   full_name: string | null;
   role: Role;
+  department_id: string | null;
+  created_at: string;
+}
+
+export interface Location {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface Department {
+  id: string;
+  location_id: string;
+  name: string;
   created_at: string;
 }
 
@@ -24,6 +38,7 @@ export interface Module {
   quiz: QuizQuestion[];
   published: boolean;
   sort_order: number;
+  department_id: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;

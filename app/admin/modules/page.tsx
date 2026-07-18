@@ -1,15 +1,21 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { Module } from "@/lib/types";
+import { getDepartmentOptions } from "@/lib/departments";
 
 export default async function AdminModulesPage() {
   const supabase = await createClient();
 
-  const { data: modules } = await supabase
-    .from("modules")
-    .select("*")
-    .order("sort_order", { ascending: true })
-    .returns<Module[]>();
+  const [{ data: modules }, departments] = await Promise.all([
+    supabase
+      .from("modules")
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .returns<Module[]>(),
+    getDepartmentOptions(),
+  ]);
+
+  const departmentLabel = new Map(departments.map((d) => [d.id, d.label]));
 
   return (
     <div>
@@ -41,6 +47,10 @@ export default async function AdminModulesPage() {
               <div>
                 <h2 className="font-medium text-stone-900">{mod.title}</h2>
                 <p className="mt-0.5 text-sm text-stone-500">
+                  {mod.department_id
+                    ? departmentLabel.get(mod.department_id) ?? "Unknown department"
+                    : "General — all hires"}
+                  {" · "}
                   {mod.quiz.length} question{mod.quiz.length === 1 ? "" : "s"}
                 </p>
               </div>

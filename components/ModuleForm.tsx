@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Module, QuizQuestion } from "@/lib/types";
+import type { DepartmentOption } from "@/lib/departments";
 
 function emptyQuestion(): QuizQuestion {
   return { question: "", options: ["", ""], correct_index: 0 };
@@ -11,8 +12,10 @@ function emptyQuestion(): QuizQuestion {
 
 export default function ModuleForm({
   existing,
+  departments,
 }: {
   existing?: Module | null;
+  departments: DepartmentOption[];
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -23,6 +26,7 @@ export default function ModuleForm({
   const [imageUrl, setImageUrl] = useState(existing?.image_url ?? "");
   const [videoUrl, setVideoUrl] = useState(existing?.video_url ?? "");
   const [sortOrder, setSortOrder] = useState(existing?.sort_order ?? 0);
+  const [departmentId, setDepartmentId] = useState(existing?.department_id ?? "");
   const [published, setPublished] = useState(existing?.published ?? false);
   const [quiz, setQuiz] = useState<QuizQuestion[]>(existing?.quiz ?? []);
 
@@ -95,6 +99,7 @@ export default function ModuleForm({
       image_url: imageUrl.trim() || null,
       video_url: videoUrl.trim() || null,
       sort_order: sortOrder,
+      department_id: departmentId || null,
       published,
       quiz: cleanedQuiz,
     };
@@ -200,13 +205,29 @@ export default function ModuleForm({
       </label>
 
       <label className="flex flex-col gap-1 text-sm text-stone-700">
-        Order (lower numbers show first)
+        Order (lower numbers show first, e.g. Day 1, Day 2...)
         <input
           type="number"
           value={sortOrder}
           onChange={(e) => setSortOrder(Number(e.target.value))}
           className="w-32 rounded-md border border-stone-300 px-3 py-2 text-stone-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
         />
+      </label>
+
+      <label className="flex flex-col gap-1 text-sm text-stone-700">
+        Department (leave blank to show this to every hire regardless of department)
+        <select
+          value={departmentId}
+          onChange={(e) => setDepartmentId(e.target.value)}
+          className="rounded-md border border-stone-300 px-3 py-2 text-stone-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+        >
+          <option value="">General (all hires)</option>
+          {departments.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.label}
+            </option>
+          ))}
+        </select>
       </label>
 
       <label className="flex items-center gap-2 text-sm text-stone-700">
