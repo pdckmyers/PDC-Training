@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Department, Location } from "@/lib/types";
@@ -158,6 +159,12 @@ export default function LocationsManager({
                   >
                     <span className="text-sm text-stone-800">{dept.name}</span>
                     <div className="flex items-center gap-3">
+                      <Link
+                        href={`/admin/departments/${dept.id}`}
+                        className="text-xs font-medium text-brand-dark hover:underline"
+                      >
+                        Manage days
+                      </Link>
                       <button
                         onClick={() => copyInviteLink(dept.id)}
                         className="text-xs font-medium text-brand-dark hover:underline"

@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { Module, QuizQuestion } from "@/lib/types";
-import type { DepartmentOption } from "@/lib/departments";
 
 function emptyQuestion(): QuizQuestion {
   return { question: "", options: ["", ""], correct_index: 0 };
@@ -12,10 +12,16 @@ function emptyQuestion(): QuizQuestion {
 
 export default function ModuleForm({
   existing,
-  departments,
+  dayId = null,
+  breadcrumb,
+  backHref = "/admin/modules",
 }: {
   existing?: Module | null;
-  departments: DepartmentOption[];
+  /** Set when creating a module from inside a day's folder. */
+  dayId?: string | null;
+  /** Read-only "Location — Department — Day" context, if any. */
+  breadcrumb?: { label: string; href: string } | null;
+  backHref?: string;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -26,7 +32,6 @@ export default function ModuleForm({
   const [imageUrl, setImageUrl] = useState(existing?.image_url ?? "");
   const [videoUrl, setVideoUrl] = useState(existing?.video_url ?? "");
   const [sortOrder, setSortOrder] = useState(existing?.sort_order ?? 0);
-  const [departmentId, setDepartmentId] = useState(existing?.department_id ?? "");
   const [published, setPublished] = useState(existing?.published ?? false);
   const [quiz, setQuiz] = useState<QuizQuestion[]>(existing?.quiz ?? []);
 
@@ -99,7 +104,6 @@ export default function ModuleForm({
       image_url: imageUrl.trim() || null,
       video_url: videoUrl.trim() || null,
       sort_order: sortOrder,
-      department_id: departmentId || null,
       published,
       quiz: cleanedQuiz,
     };
@@ -121,7 +125,7 @@ export default function ModuleForm({
 
       const { error } = await supabase
         .from("modules")
-        .insert({ ...payload, created_by: user!.id });
+        .insert({ ...payload, day_id: dayId, created_by: user!.id });
       setSaving(false);
       if (error) {
         setError(error.message);
@@ -129,7 +133,7 @@ export default function ModuleForm({
       }
     }
 
-    router.push("/admin/modules");
+    router.push(backHref);
     router.refresh();
   }
 
@@ -149,7 +153,7 @@ export default function ModuleForm({
       return;
     }
 
-    router.push("/admin/modules");
+    router.push(backHref);
     router.refresh();
   }
 
@@ -214,21 +218,19 @@ export default function ModuleForm({
         />
       </label>
 
-      <label className="flex flex-col gap-1 text-sm text-stone-700">
-        Department (leave blank to show this to every employee regardless of department)
-        <select
-          value={departmentId}
-          onChange={(e) => setDepartmentId(e.target.value)}
-          className="rounded-md border border-stone-300 px-3 py-2 text-stone-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-        >
-          <option value="">General (all employees)</option>
-          {departments.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.label}
-            </option>
-          ))}
-        </select>
-      </label>
+      {breadcrumb ? (
+        <p className="text-sm text-stone-600">
+          In:{" "}
+          <Link href={breadcrumb.href} className="text-brand-dark underline">
+            {breadcrumb.label}
+          </Link>
+        </p>
+      ) : (
+        <p className="text-sm text-stone-500">
+          General module — visible to every employee, not tied to a
+          department or day.
+        </p>
+      )}
 
       <label className="flex items-center gap-2 text-sm text-stone-700">
         <input
