@@ -3,5 +3,11 @@
 @tailwind utilities;
 
 body {
-  @apply bg-stone-50 text-stone-900;
+  @apply bg-brand-cream text-brand-ink;
+}
+
+h1,
+h2,
+h3 {
+  @apply font-serif;
 }

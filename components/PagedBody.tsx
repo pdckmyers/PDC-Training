@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 const PROSE_CLASSES =
-  "leading-relaxed text-stone-800 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1";
+  "font-serif text-lg leading-relaxed text-brand-ink [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1";
 
 export default function PagedBody({ pages }: { pages: string[] }) {
   const [index, setIndex] = useState(0);
