@@ -23,7 +23,10 @@ export default async function Nav() {
     <header className="border-b border-stone-200 bg-white">
       <nav className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
         <div className="flex items-center gap-6">
-          <Link href="/modules" className="font-semibold text-brand-dark">
+          <Link
+            href="/modules"
+            className="font-serif text-lg font-semibold text-brand-dark"
+          >
             PDC Training
           </Link>
           <Link href="/modules" className="text-sm text-stone-600 hover:text-stone-900">
