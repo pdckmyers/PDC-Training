@@ -131,11 +131,16 @@ tracked so admins can see who's finished what.
   `/admin/progress` (completion matrix, admin-only). `proxy.ts` (Next 16's
   renamed middleware convention) gates everything behind auth and gates
   `/admin/*` behind the admin role.
-- **Hosting:** Vercel (auto-deploys `main` once the repo is imported there).
-- **Env vars needed:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-  (see `.env.local.example`) — set in Vercel project settings, not committed.
-- **Not yet applied:** the Supabase migration hasn't been run against a real
-  project yet (no Supabase connector connected as of this writing). Apply it
-  via the Supabase MCP connector as soon as it's available, then wire the
-  env vars into Vercel — don't ask the owner to run SQL by hand.
+- **Hosting:** Vercel project `pdc-training-l7g8`, live at
+  `pdc-training-l7g8.vercel.app`, auto-deploys `main`. **Important:** an
+  earlier duplicate project named `pdc-training` was created by mistake and
+  deleted — if a second Vercel project ever reappears for this repo
+  (e.g. from a stray re-import), consolidate back down to one.
+- **Env vars set in Vercel:** `NEXT_PUBLIC_SUPABASE_URL`,
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY` (see `.env.local.example` for local dev) —
+  values come from the live Supabase project below.
+- **Supabase project:** `myrbessqeorztzqfwvjp` (org `pmgqyuxkfeqlxjridbzu`),
+  region us-east-1. Migrations 0001–0003 are applied; security and
+  performance advisors are clean as of the last check. Re-run
+  `get_advisors` after future schema changes via the Supabase MCP connector.
 - Repo: `pdckmyers/PDC-Training`
