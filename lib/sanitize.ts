@@ -79,9 +79,21 @@ const LEADING_OR_TRAILING_BR = /^(\s|<br\s*\/?>)+|(\s|<br\s*\/?>)+$/gi;
  * legacy plain-text content) collapses to a single spacer -- otherwise a
  * blank line renders as a double-height gap instead of one paragraph
  * break.
+ *
+ * The rich text editor sometimes leaves a trailing <br> as the last thing
+ * inside a <p> (e.g. from a blank line at the end of a block). Swapping
+ * that one for a <div> would nest a block element inside a <p>, which is
+ * invalid HTML -- the browser silently closes the <p> early and reflows
+ * everything after it, producing inconsistent, unpredictable gaps. A
+ * trailing <br> right before </p> is dropped instead: the paragraph's own
+ * spacing already accounts for it.
  */
 function replaceLineBreaksWithSpacers(html: string): string {
-  return html.replace(
+  const withoutTrailingBr = html.replace(
+    /<br\s*\/?>(\s*)<\/p>/gi,
+    "$1</p>"
+  );
+  return withoutTrailingBr.replace(
     /(?:<br\s*\/?>\s*)+/gi,
     '<div style="height:0.9em" aria-hidden="true"></div>'
   );
