@@ -53,11 +53,31 @@ export function toEditableHtml(body: string): string {
  */
 const LEADING_OR_TRAILING_BR = /^(\s|<br\s*\/?>)+|(\s|<br\s*\/?>)+$/gi;
 
+/**
+ * <br> is a void element -- browsers don't apply margins, height, or
+ * generated content (::before/::after) to it, so it can't be styled into
+ * a visible paragraph gap no matter what CSS is applied. Swap each one
+ * for a real block box with an explicit height instead. Inline style is
+ * intentional here: this HTML is generated at render time, not scanned
+ * from source by Tailwind, so a Tailwind class name here would never
+ * make it into the compiled CSS.
+ */
+function replaceLineBreaksWithSpacers(html: string): string {
+  return html.replace(
+    /<br\s*\/?>/gi,
+    '<div style="height:0.9em" aria-hidden="true"></div>'
+  );
+}
+
 export function splitModuleBodyIntoPages(body: string): string[] {
   if (!body) return [];
 
   return toEditableHtml(body)
     .split(/<hr[^>]*>/i)
-    .map((page) => sanitizeModuleBody(page).replace(LEADING_OR_TRAILING_BR, "").trim())
+    .map((page) =>
+      replaceLineBreaksWithSpacers(
+        sanitizeModuleBody(page).replace(LEADING_OR_TRAILING_BR, "").trim()
+      )
+    )
     .filter((page) => page.length > 0);
 }
