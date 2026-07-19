@@ -1,11 +1,31 @@
 import sanitizeHtml from "sanitize-html";
 
-const ALLOWED_TAGS = ["b", "strong", "i", "em", "u", "ul", "ol", "li", "br", "p", "div"];
+const ALLOWED_TAGS = [
+  "b",
+  "strong",
+  "i",
+  "em",
+  "u",
+  "ul",
+  "ol",
+  "li",
+  "br",
+  "p",
+  "div",
+  "img",
+];
 
 export function sanitizeModuleBody(html: string): string {
   return sanitizeHtml(html, {
     allowedTags: ALLOWED_TAGS,
-    allowedAttributes: {},
+    allowedAttributes: {
+      img: ["src", "alt"],
+    },
+    // Only allow https:// image sources -- blocks javascript:/data: URI
+    // injection through a crafted src attribute.
+    allowedSchemesByTag: {
+      img: ["https"],
+    },
   });
 }
 

@@ -49,6 +49,25 @@ export default function RichTextEditor({
     onChange(ref.current?.innerHTML ?? "");
   }
 
+  function insertImage(e: React.MouseEvent) {
+    e.preventDefault();
+    const url = window.prompt("Paste the image URL:");
+    if (!url) return;
+
+    if (!/^https:\/\//i.test(url.trim())) {
+      window.alert("Please use a link that starts with https://");
+      return;
+    }
+
+    const escaped = url.trim().replace(/"/g, "&quot;");
+    document.execCommand(
+      "insertHTML",
+      false,
+      `<img src="${escaped}" alt="" /><br>`
+    );
+    onChange(ref.current?.innerHTML ?? "");
+  }
+
   return (
     <div>
       <div className="flex flex-wrap items-center gap-1 rounded-t-md border border-b-0 border-stone-300 bg-stone-50 p-1">
@@ -59,6 +78,15 @@ export default function RichTextEditor({
           label="• List"
           title="Bullet list"
         />
+        <span className="mx-1 h-4 w-px bg-stone-300" />
+        <button
+          type="button"
+          title="Insert an image here"
+          onMouseDown={insertImage}
+          className="rounded px-2.5 py-1 text-sm text-stone-700 hover:bg-stone-200"
+        >
+          🖼 Image
+        </button>
         <span className="mx-1 h-4 w-px bg-stone-300" />
         <button
           type="button"
@@ -73,11 +101,12 @@ export default function RichTextEditor({
         ref={ref}
         contentEditable
         onInput={() => onChange(ref.current?.innerHTML ?? "")}
-        className="min-h-[180px] rounded-b-md border border-stone-300 px-3 py-2 text-stone-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand [&_hr]:my-3 [&_hr]:border-t-2 [&_hr]:border-dashed [&_hr]:border-brand [&_ul]:list-disc [&_ul]:pl-5"
+        className="min-h-[180px] rounded-b-md border border-stone-300 px-3 py-2 text-stone-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand [&_hr]:my-3 [&_hr]:border-t-2 [&_hr]:border-dashed [&_hr]:border-brand [&_img]:my-2 [&_img]:max-w-full [&_img]:rounded-md [&_ul]:list-disc [&_ul]:pl-5"
       />
       <p className="mt-1 text-xs text-stone-500">
         The dashed line is a page break — employees see it as separate pages
-        with Next/Previous buttons.
+        with Next/Previous buttons. Images are inserted where your cursor is,
+        so put one before a page break to keep it on that page.
       </p>
     </div>
   );
