@@ -6,13 +6,19 @@ export interface Profile {
   full_name: string | null;
   role: Role;
   department_id: string | null;
-  location_id: string | null;
   created_at: string;
 }
 
 export interface Location {
   id: string;
   name: string;
+  created_at: string;
+}
+
+export interface ManagerLocation {
+  id: string;
+  manager_id: string;
+  location_id: string;
   created_at: string;
 }
 
