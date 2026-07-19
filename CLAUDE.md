@@ -116,21 +116,51 @@ work through published modules, and their completions/quiz scores are
 tracked so admins can see who's finished what.
 
 - **Framework:** Next.js 16 (App Router, Turbopack), TypeScript, Tailwind CSS.
+- **Brand:** Pretty Decent Concepts palette/typefaces applied via
+  `tailwind.config.ts` (colors) and `next/font/google` in `app/layout.tsx`
+  (Cormorant Garamond for headings/body copy, Urbanist for UI chrome). The
+  brand's accent typeface (Aviano) isn't used — no licensed web font file.
 - **Auth/DB:** Supabase — email/password auth, Postgres with row-level
-  security. Schema lives in `supabase/migrations/0001_init.sql`:
-  - `profiles` (id, email, full_name, role: `hire`|`admin`) — a trigger
-    creates this automatically on signup; **the very first person to sign up
-    becomes admin**, everyone after that defaults to `hire`.
+  security. Schema lives in `supabase/migrations/` (0001 through 0008 as of
+  this writing):
+  - `profiles` (id, email, full_name, role: `hire`|`manager`|`admin`,
+    department_id) — a trigger creates this automatically on signup, reading
+    `department_id` from signup metadata when someone joins via a
+    department's invite link (see `/join/[departmentId]`). **The very first
+    person to sign up becomes admin**, everyone after that defaults to
+    `hire`. Only admins can change anyone's role (enforced by a trigger, not
+    just RLS, since RLS alone can't restrict which columns an UPDATE
+    touches) — managers can view all progress but not edit content or roles.
+  - `locations` / `departments` (departments belong to a location) —
+    admin-managed under `/admin/locations`.
+  - `days` (belongs to a department, e.g. "Day One") — admin-managed under
+    `/admin/departments/[id]`.
   - `modules` (title, description, body, image_url, video_url, quiz jsonb,
     published, sort_order, created_by) — quiz is an array of
-    `{ question, options[], correct_index }`.
+    `{ question, options[], correct_index }`. `body` is sanitized HTML (see
+    `lib/sanitize.ts`) written via the rich text editor
+    (`components/RichTextEditor.tsx`); admins can insert `<hr>` page breaks
+    (split into multiple screens on the employee side) and inline `https://`
+    images. Modules are **not** directly tied to a single day/department —
+    see `module_days` below.
+  - `module_days` (module_id, day_id) — many-to-many join table. A module
+    with zero rows here is "general" (visible to every employee regardless
+    of department); a module can be checked into multiple days, including
+    across different departments, so editing it once updates everywhere
+    it's linked (see `lib/days.ts` `getAllDayOptions`/`getModuleDayIds`).
   - `completions` (user_id, module_id, quiz_score, quiz_total,
-    completed_at) — one row per hire per module.
-- **Routes:** `/login`, `/signup`, `/modules` (list + detail for hires),
-  `/admin/modules` (list/create/edit/delete, admin-only),
-  `/admin/progress` (completion matrix, admin-only). `proxy.ts` (Next 16's
-  renamed middleware convention) gates everything behind auth and gates
-  `/admin/*` behind the admin role.
+    completed_at) — one row per employee per module, regardless of how many
+    days that module appears under.
+- **Routes:** `/login`, `/signup`, `/join/[departmentId]` (invite-link
+  signup, pre-assigns department), `/modules` (employee's day folders +
+  general modules), `/modules/days/[dayId]`, `/modules/[id]` (detail/quiz,
+  paginated if the body has page breaks), `/admin/modules` (flat list, all
+  admins), `/admin/locations` → `/admin/departments/[id]` →
+  `/admin/days/[id]` (folder drill-down for authoring), `/admin/team`
+  (promote/demote employee ↔ manager, admin-only), `/admin/progress`
+  (completion matrix, admin + manager). `proxy.ts` (Next 16's renamed
+  middleware convention) gates everything behind auth and gates `/admin/*`
+  by role (managers may only reach `/admin/progress`).
 - **Hosting:** Vercel project `pdc-training-l7g8`, live at
   `pdc-training-l7g8.vercel.app`, auto-deploys `main`. **Important:** an
   earlier duplicate project named `pdc-training` was created by mistake and
@@ -140,7 +170,19 @@ tracked so admins can see who's finished what.
   `NEXT_PUBLIC_SUPABASE_ANON_KEY` (see `.env.local.example` for local dev) —
   values come from the live Supabase project below.
 - **Supabase project:** `myrbessqeorztzqfwvjp` (org `pmgqyuxkfeqlxjridbzu`),
-  region us-east-1. Migrations 0001–0003 are applied; security and
-  performance advisors are clean as of the last check. Re-run
-  `get_advisors` after future schema changes via the Supabase MCP connector.
+  region us-east-1. Re-run `get_advisors` (security + performance) after
+  future schema changes via the Supabase MCP connector — it's caught real
+  issues (mutable search_path, self-referencing RLS, missing FK indexes)
+  every time it's been run so far.
+- **Sandbox limitation worth knowing:** this dev environment's network
+  policy blocks direct connections to `supabase.co`, `vercel.app`, and
+  `dropbox.com` (and likely other non-allowlisted hosts). Migrations
+  therefore get handed to the owner as raw SQL to paste into Supabase's SQL
+  Editor rather than applied directly, unless the Supabase MCP connector is
+  enabled for the session. Always verify UI/CSS changes by actually
+  rendering them (build the real compiled Tailwind output and screenshot it
+  with Playwright, proxy args: `--proxy-server=$HTTPS_PROXY
+  --proxy-bypass-list=localhost;127.0.0.1;<local>`) rather than assuming a
+  className took effect — this has caught real mistakes (e.g. margins don't
+  apply to `<br>`, a void element).
 - Repo: `pdckmyers/PDC-Training`

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { Module, QuizQuestion } from "@/lib/types";
 import { toEditableHtml } from "@/lib/sanitize";
+import type { DayOption } from "@/lib/days";
 import RichTextEditor from "@/components/RichTextEditor";
 
 function emptyQuestion(): QuizQuestion {
@@ -14,15 +15,15 @@ function emptyQuestion(): QuizQuestion {
 
 export default function ModuleForm({
   existing,
-  dayId = null,
-  breadcrumb,
+  dayOptions,
+  initialDayIds = [],
   backHref = "/admin/modules",
 }: {
   existing?: Module | null;
-  /** Set when creating a module from inside a day's folder. */
-  dayId?: string | null;
-  /** Read-only "Location — Department — Day" context, if any. */
-  breadcrumb?: { label: string; href: string } | null;
+  /** Every day across every location/department, for the multi-select. */
+  dayOptions: DayOption[];
+  /** Days this module is already linked to (edit), or pre-checked (create-from-a-day). */
+  initialDayIds?: string[];
   backHref?: string;
 }) {
   const router = useRouter();
@@ -36,6 +37,13 @@ export default function ModuleForm({
   const [sortOrder, setSortOrder] = useState(existing?.sort_order ?? 0);
   const [published, setPublished] = useState(existing?.published ?? false);
   const [quiz, setQuiz] = useState<QuizQuestion[]>(existing?.quiz ?? []);
+  const [dayIds, setDayIds] = useState<string[]>(initialDayIds);
+
+  function toggleDay(id: string) {
+    setDayIds((prev) =>
+      prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]
+    );
+  }
 
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -110,13 +118,15 @@ export default function ModuleForm({
       quiz: cleanedQuiz,
     };
 
+    let moduleId = existing?.id;
+
     if (existing) {
       const { error } = await supabase
         .from("modules")
         .update(payload)
         .eq("id", existing.id);
-      setSaving(false);
       if (error) {
+        setSaving(false);
         setError(error.message);
         return;
       }
@@ -125,16 +135,42 @@ export default function ModuleForm({
         data: { user },
       } = await supabase.auth.getUser();
 
-      const { error } = await supabase
+      const { data: inserted, error } = await supabase
         .from("modules")
-        .insert({ ...payload, day_id: dayId, created_by: user!.id });
+        .insert({ ...payload, created_by: user!.id })
+        .select()
+        .single<Module>();
+      if (error || !inserted) {
+        setSaving(false);
+        setError(error?.message ?? "Could not create module");
+        return;
+      }
+      moduleId = inserted.id;
+    }
+
+    // Replace this module's day links with whatever's checked now.
+    const { error: clearError } = await supabase
+      .from("module_days")
+      .delete()
+      .eq("module_id", moduleId!);
+    if (clearError) {
       setSaving(false);
-      if (error) {
-        setError(error.message);
+      setError(clearError.message);
+      return;
+    }
+
+    if (dayIds.length > 0) {
+      const { error: linkError } = await supabase
+        .from("module_days")
+        .insert(dayIds.map((day_id) => ({ module_id: moduleId, day_id })));
+      if (linkError) {
+        setSaving(false);
+        setError(linkError.message);
         return;
       }
     }
 
+    setSaving(false);
     router.push(backHref);
     router.refresh();
   }
@@ -215,19 +251,36 @@ export default function ModuleForm({
         />
       </label>
 
-      {breadcrumb ? (
-        <p className="text-sm text-stone-600">
-          In:{" "}
-          <Link href={breadcrumb.href} className="text-brand-dark underline">
-            {breadcrumb.label}
-          </Link>
+      <div className="flex flex-col gap-1 text-sm text-stone-700">
+        Show in these days
+        <div className="max-h-48 overflow-y-auto rounded-md border border-stone-300 p-2">
+          {dayOptions.length === 0 && (
+            <p className="p-2 text-sm text-stone-500">
+              No day folders exist yet — this will be a general module.
+            </p>
+          )}
+          {dayOptions.map((day) => (
+            <label
+              key={day.id}
+              className="flex items-center gap-2 rounded px-2 py-1.5 text-sm text-stone-800 hover:bg-stone-50"
+            >
+              <input
+                type="checkbox"
+                checked={dayIds.includes(day.id)}
+                onChange={() => toggleDay(day.id)}
+                className="text-brand focus:ring-brand"
+              />
+              {day.label}
+            </label>
+          ))}
+        </div>
+        <p className="text-xs text-stone-500">
+          Check every day this module should appear in — checking more than
+          one shares the same content across departments, so editing it here
+          updates everywhere it&rsquo;s checked. Leave everything unchecked
+          for a general module visible to every employee.
         </p>
-      ) : (
-        <p className="text-sm text-stone-500">
-          General module — visible to every employee, not tied to a
-          department or day.
-        </p>
-      )}
+      </div>
 
       <label className="flex items-center gap-2 text-sm text-stone-700">
         <input

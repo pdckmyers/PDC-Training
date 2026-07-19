@@ -19,19 +19,23 @@ export default async function DayPage({
 
   if (!day) notFound();
 
-  const [{ data: department }, { data: modules }] = await Promise.all([
+  const [{ data: department }, { data: moduleDayRows }] = await Promise.all([
     supabase
       .from("departments")
       .select("*")
       .eq("id", day.department_id)
       .single<Department>(),
     supabase
-      .from("modules")
-      .select("*")
+      .from("module_days")
+      .select("modules(*)")
       .eq("day_id", dayId)
-      .order("sort_order", { ascending: true })
-      .returns<Module[]>(),
+      .returns<{ modules: Module | null }[]>(),
   ]);
+
+  const modules = (moduleDayRows ?? [])
+    .map((row) => row.modules)
+    .filter((mod): mod is Module => mod !== null)
+    .sort((a, b) => a.sort_order - b.sort_order);
 
   const { data: location } = department
     ? await supabase
@@ -61,14 +65,14 @@ export default async function DayPage({
         </Link>
       </div>
 
-      {(!modules || modules.length === 0) && (
+      {modules.length === 0 && (
         <p className="rounded-lg border border-dashed border-stone-300 p-6 text-stone-500">
           No modules in this day yet.
         </p>
       )}
 
       <ul className="flex flex-col gap-3">
-        {modules?.map((mod) => (
+        {modules.map((mod) => (
           <li key={mod.id}>
             <Link
               href={`/admin/modules/${mod.id}/edit`}

@@ -22,13 +22,16 @@ export default async function HireDayPage({
 
   if (!day) notFound();
 
-  const { data: modules } = await supabase
-    .from("modules")
-    .select("*")
+  const { data: rows } = await supabase
+    .from("module_days")
+    .select("modules(*)")
     .eq("day_id", dayId)
-    .eq("published", true)
-    .order("sort_order", { ascending: true })
-    .returns<Module[]>();
+    .returns<{ modules: Module | null }[]>();
+
+  const modules = (rows ?? [])
+    .map((row) => row.modules)
+    .filter((mod): mod is Module => mod !== null && mod.published)
+    .sort((a, b) => a.sort_order - b.sort_order);
 
   const { data: completions } = await supabase
     .from("completions")
@@ -50,14 +53,14 @@ export default async function HireDayPage({
         {day.title}
       </h1>
 
-      {(!modules || modules.length === 0) && (
+      {modules.length === 0 && (
         <p className="rounded-lg border border-dashed border-stone-300 p-6 text-stone-500">
           No modules in this day yet. Check back soon.
         </p>
       )}
 
       <ul className="flex flex-col gap-3">
-        {modules?.map((mod) => {
+        {modules.map((mod) => {
           const done = completedIds.has(mod.id);
           return (
             <li key={mod.id}>

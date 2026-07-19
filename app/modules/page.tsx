@@ -14,16 +14,23 @@ export default async function ModulesPage() {
     .eq("id", user!.id)
     .single<Profile>();
 
-  const { data: generalModules } = await supabase
-    .from("modules")
-    .select("*")
-    .eq("published", true)
-    .is("day_id", null)
-    .order("sort_order", { ascending: true })
-    .returns<Module[]>();
+  const [{ data: publishedModules }, { data: allLinks }] = await Promise.all([
+    supabase
+      .from("modules")
+      .select("*")
+      .eq("published", true)
+      .order("sort_order", { ascending: true })
+      .returns<Module[]>(),
+    supabase.from("module_days").select("module_id").returns<{ module_id: string }[]>(),
+  ]);
+
+  const linkedModuleIds = new Set((allLinks ?? []).map((l) => l.module_id));
+  const generalModules = (publishedModules ?? []).filter(
+    (m) => !linkedModuleIds.has(m.id)
+  );
 
   let days: Day[] = [];
-  let dayModules: Module[] = [];
+  let dayModuleRows: { day_id: string; module: Module }[] = [];
 
   if (profile?.department_id) {
     const { data: departmentDays } = await supabase
@@ -35,16 +42,18 @@ export default async function ModulesPage() {
     days = departmentDays ?? [];
 
     if (days.length > 0) {
-      const { data: modulesInDays } = await supabase
-        .from("modules")
-        .select("*")
-        .eq("published", true)
+      const { data: rows } = await supabase
+        .from("module_days")
+        .select("day_id, modules(*)")
         .in(
           "day_id",
           days.map((d) => d.id)
         )
-        .returns<Module[]>();
-      dayModules = modulesInDays ?? [];
+        .returns<{ day_id: string; modules: Module | null }[]>();
+
+      dayModuleRows = (rows ?? [])
+        .filter((r) => r.modules !== null && r.modules.published)
+        .map((r) => ({ day_id: r.day_id, module: r.modules as Module }));
     }
   }
 
@@ -74,9 +83,9 @@ export default async function ModulesPage() {
           </h2>
           <ul className="flex flex-col gap-3">
             {days.map((day) => {
-              const modulesForDay = dayModules.filter(
-                (m) => m.day_id === day.id
-              );
+              const modulesForDay = dayModuleRows
+                .filter((r) => r.day_id === day.id)
+                .map((r) => r.module);
               const completedCount = modulesForDay.filter((m) =>
                 completedIds.has(m.id)
               ).length;
@@ -109,14 +118,14 @@ export default async function ModulesPage() {
           </h2>
         )}
 
-        {(!generalModules || generalModules.length === 0) && days.length === 0 && (
+        {generalModules.length === 0 && days.length === 0 && (
           <p className="rounded-lg border border-dashed border-stone-300 p-6 text-stone-500">
             No training modules are published yet. Check back soon.
           </p>
         )}
 
         <ul className="flex flex-col gap-3">
-          {generalModules?.map((mod) => {
+          {generalModules.map((mod) => {
             const done = completedIds.has(mod.id);
             return (
               <li key={mod.id}>

@@ -46,10 +46,16 @@ export interface Module {
   quiz: QuizQuestion[];
   published: boolean;
   sort_order: number;
-  day_id: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ModuleDay {
+  id: string;
+  module_id: string;
+  day_id: string;
+  created_at: string;
 }
 
 export interface Completion {

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getDayBreadcrumb } from "@/lib/days";
+import { getAllDayOptions, getDayBreadcrumb } from "@/lib/days";
 import ModuleForm from "@/components/ModuleForm";
 
 export default async function NewModuleInDayPage({
@@ -8,7 +8,10 @@ export default async function NewModuleInDayPage({
   params: Promise<{ dayId: string }>;
 }) {
   const { dayId } = await params;
-  const breadcrumb = await getDayBreadcrumb(dayId);
+  const [breadcrumb, dayOptions] = await Promise.all([
+    getDayBreadcrumb(dayId),
+    getAllDayOptions(),
+  ]);
 
   if (!breadcrumb) notFound();
 
@@ -18,8 +21,8 @@ export default async function NewModuleInDayPage({
         New module
       </h1>
       <ModuleForm
-        dayId={dayId}
-        breadcrumb={breadcrumb}
+        dayOptions={dayOptions}
+        initialDayIds={[dayId]}
         backHref={`/admin/days/${dayId}`}
       />
     </div>
