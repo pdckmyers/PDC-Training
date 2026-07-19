@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import type { Profile, Role } from "@/lib/types";
+import type { Location, Profile, Role } from "@/lib/types";
 
 const ROLE_LABEL: Record<Role, string> = {
   hire: "Employee",
@@ -13,8 +13,10 @@ const ROLE_LABEL: Record<Role, string> = {
 
 export default function TeamManager({
   initialProfiles,
+  locations,
 }: {
   initialProfiles: Profile[];
+  locations: Location[];
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -43,6 +45,30 @@ export default function TeamManager({
     router.refresh();
   }
 
+  async function setLocation(id: string, locationId: string) {
+    setUpdatingId(id);
+    setError(null);
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ location_id: locationId || null })
+      .eq("id", id);
+
+    setUpdatingId(null);
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
+    setProfiles((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, location_id: locationId || null } : p
+      )
+    );
+    router.refresh();
+  }
+
   return (
     <div className="flex flex-col gap-3">
       {error && <p className="text-sm text-red-600">{error}</p>}
@@ -60,6 +86,9 @@ export default function TeamManager({
               <th className="px-4 py-3 font-medium text-stone-700">Name</th>
               <th className="px-4 py-3 font-medium text-stone-700">Email</th>
               <th className="px-4 py-3 font-medium text-stone-700">Role</th>
+              <th className="px-4 py-3 font-medium text-stone-700">
+                Location
+              </th>
               <th className="px-4 py-3 font-medium text-stone-700"></th>
             </tr>
           </thead>
@@ -82,6 +111,25 @@ export default function TeamManager({
                   >
                     {ROLE_LABEL[profile.role]}
                   </span>
+                </td>
+                <td className="px-4 py-3">
+                  {profile.role === "manager" ? (
+                    <select
+                      value={profile.location_id ?? ""}
+                      onChange={(e) => setLocation(profile.id, e.target.value)}
+                      disabled={updatingId === profile.id}
+                      className="rounded-md border border-stone-300 px-2 py-1 text-sm text-stone-700 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand disabled:opacity-60"
+                    >
+                      <option value="">Not assigned</option>
+                      {locations.map((loc) => (
+                        <option key={loc.id} value={loc.id}>
+                          {loc.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span className="text-stone-400">—</span>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   {profile.role === "hire" && (
