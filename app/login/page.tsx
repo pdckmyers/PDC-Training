@@ -49,9 +49,6 @@ export default function LoginPage() {
           &ldquo;Together, we will succeed in creating environments that
           define a community.&rdquo;
         </p>
-        <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-brand">
-          Our Mission
-        </p>
       </div>
 
       <h1 className="mb-6 text-2xl font-semibold text-stone-900">Sign in</h1>
