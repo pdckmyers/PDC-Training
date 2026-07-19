@@ -26,6 +26,19 @@ export function sanitizeModuleBody(html: string): string {
     allowedSchemesByTag: {
       img: ["https"],
     },
+    // Content pasted in from Word/Google Docs often carries heading tags.
+    // Rather than silently dropping them (which also destroys the block
+    // break they provided, running surrounding text together), downgrade
+    // them to plain paragraphs -- keeps the separation, avoids a stray
+    // oversized heading competing with the module's real title.
+    transformTags: {
+      h1: "p",
+      h2: "p",
+      h3: "p",
+      h4: "p",
+      h5: "p",
+      h6: "p",
+    },
   });
 }
 
