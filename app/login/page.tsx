@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -35,6 +36,24 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto max-w-sm">
+      <div className="mb-10 flex flex-col items-center text-center">
+        <Image
+          src="/logo.png"
+          alt="Pretty Decent Concepts"
+          width={366}
+          height={82}
+          priority
+          className="h-auto w-64"
+        />
+        <p className="mt-6 font-serif text-xl italic leading-snug text-brand-ink">
+          &ldquo;Together, we will succeed in creating environments that
+          define a community.&rdquo;
+        </p>
+        <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-brand">
+          Our Mission
+        </p>
+      </div>
+
       <h1 className="mb-6 text-2xl font-semibold text-stone-900">Sign in</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1 text-sm text-stone-700">
