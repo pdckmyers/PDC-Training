@@ -74,10 +74,15 @@ const LEADING_OR_TRAILING_BR = /^(\s|<br\s*\/?>)+|(\s|<br\s*\/?>)+$/gi;
  * intentional here: this HTML is generated at render time, not scanned
  * from source by Tailwind, so a Tailwind class name here would never
  * make it into the compiled CSS.
+ *
+ * A run of consecutive <br>s (e.g. a blank line between paragraphs in
+ * legacy plain-text content) collapses to a single spacer -- otherwise a
+ * blank line renders as a double-height gap instead of one paragraph
+ * break.
  */
 function replaceLineBreaksWithSpacers(html: string): string {
   return html.replace(
-    /<br\s*\/?>/gi,
+    /(?:<br\s*\/?>\s*)+/gi,
     '<div style="height:0.9em" aria-hidden="true"></div>'
   );
 }
