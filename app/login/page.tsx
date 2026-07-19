@@ -41,7 +41,7 @@ export default function LoginPage() {
           src="/logo.png"
           alt="Pretty Decent Concepts"
           width={366}
-          height={82}
+          height={79}
           priority
           className="h-auto w-64"
         />
