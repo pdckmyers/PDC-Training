@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import type { Completion, Module, Profile } from "@/lib/types";
 import { splitModuleBodyIntoPages } from "@/lib/sanitize";
 import VideoEmbed from "@/components/VideoEmbed";
-import ModuleCompletion from "@/components/ModuleCompletion";
 import PagedBody from "@/components/PagedBody";
 
 export default async function ModuleDetailPage({
@@ -66,9 +65,8 @@ export default async function ModuleDetailPage({
 
       {mod.video_url && <VideoEmbed url={mod.video_url} />}
 
-      {mod.body && <PagedBody pages={splitModuleBodyIntoPages(mod.body)} />}
-
-      <ModuleCompletion
+      <PagedBody
+        pages={mod.body ? splitModuleBodyIntoPages(mod.body) : []}
         moduleId={mod.id}
         quiz={mod.quiz}
         existingCompletion={completion ?? null}
