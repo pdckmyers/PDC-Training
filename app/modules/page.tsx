@@ -96,7 +96,7 @@ export default async function ModulesPage() {
                     className="flex items-center justify-between rounded-lg border border-stone-200 bg-white px-5 py-4 hover:border-brand"
                   >
                     <h3 className="font-medium text-stone-900">
-                      📁 {day.title}
+                      {day.title}
                     </h3>
                     <span className="ml-4 flex-none text-xs font-semibold text-stone-500">
                       {modulesForDay.length === 0
