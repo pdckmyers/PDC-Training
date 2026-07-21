@@ -19,12 +19,21 @@ export function sanitizeModuleBody(html: string): string {
   return sanitizeHtml(html, {
     allowedTags: ALLOWED_TAGS,
     allowedAttributes: {
-      img: ["src", "alt"],
+      img: ["src", "alt", "style"],
     },
     // Only allow https:// image sources -- blocks javascript:/data: URI
     // injection through a crafted src attribute.
     allowedSchemesByTag: {
       img: ["https"],
+    },
+    // Admins can resize an inserted image to small/medium/large -- that's
+    // stored as an inline width. Only "width", and only a plain px/%
+    // number, is allowed through, so the style attribute can't be used to
+    // smuggle in anything else.
+    allowedStyles: {
+      img: {
+        width: [/^\d+(?:\.\d+)?(?:px|%)$/],
+      },
     },
     // Content pasted in from Word/Google Docs often carries heading tags.
     // Rather than silently dropping them (which also destroys the block
