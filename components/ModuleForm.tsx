@@ -378,6 +378,16 @@ export default function ModuleForm({
             </div>
           ))}
         </div>
+
+        {quiz.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setQuiz((prev) => [...prev, emptyQuestion()])}
+            className="mt-4 rounded-md border border-brand px-3 py-1.5 text-sm font-medium text-brand-dark hover:bg-brand/10"
+          >
+            Add question
+          </button>
+        )}
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
