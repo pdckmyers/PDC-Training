@@ -49,9 +49,14 @@ export default async function HireDayPage({
       >
         ← Training
       </Link>
-      <h1 className="mb-8 text-2xl font-semibold text-stone-900">
-        {day.title}
-      </h1>
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-stone-900">
+          {day.title}
+        </h1>
+        {day.description && (
+          <p className="mt-1 text-stone-600">{day.description}</p>
+        )}
+      </div>
 
       {modules.length === 0 && (
         <p className="rounded-lg border border-dashed border-stone-300 p-6 text-stone-500">

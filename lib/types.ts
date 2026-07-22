@@ -33,6 +33,7 @@ export interface Day {
   id: string;
   department_id: string;
   title: string;
+  description: string | null;
   sort_order: number;
   created_at: string;
 }
