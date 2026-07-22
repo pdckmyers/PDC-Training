@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { Day, Department, Location, Module } from "@/lib/types";
+import DayDescriptionEditor from "@/components/DayDescriptionEditor";
 
 export default async function DayPage({
   params,
@@ -64,6 +65,8 @@ export default async function DayPage({
           New module
         </Link>
       </div>
+
+      <DayDescriptionEditor dayId={day.id} initialDescription={day.description} />
 
       {modules.length === 0 && (
         <p className="rounded-lg border border-dashed border-stone-300 p-6 text-stone-500">
