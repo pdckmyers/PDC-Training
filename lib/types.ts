@@ -72,5 +72,6 @@ export interface Completion {
   module_id: string;
   quiz_score: number | null;
   quiz_total: number | null;
+  failed_attempts: number;
   completed_at: string;
 }
