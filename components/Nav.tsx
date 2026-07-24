@@ -21,34 +21,37 @@ export default async function Nav() {
 
   return (
     <header className="border-b border-stone-200 bg-white">
-      <nav className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-6">
+      <nav className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-6 py-4">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           <Link
             href="/modules"
-            className="font-serif text-lg font-semibold text-brand-dark"
+            className="whitespace-nowrap font-serif text-lg font-semibold text-brand-dark"
           >
             PDC Training
           </Link>
-          <Link href="/modules" className="text-sm text-stone-600 hover:text-stone-900">
+          <Link
+            href="/modules"
+            className="whitespace-nowrap text-sm text-stone-600 hover:text-stone-900"
+          >
             Modules
           </Link>
           {isAdmin && (
             <>
               <Link
                 href="/admin/modules"
-                className="text-sm text-stone-600 hover:text-stone-900"
+                className="whitespace-nowrap text-sm text-stone-600 hover:text-stone-900"
               >
                 Manage modules
               </Link>
               <Link
                 href="/admin/locations"
-                className="text-sm text-stone-600 hover:text-stone-900"
+                className="whitespace-nowrap text-sm text-stone-600 hover:text-stone-900"
               >
                 Locations
               </Link>
               <Link
                 href="/admin/team"
-                className="text-sm text-stone-600 hover:text-stone-900"
+                className="whitespace-nowrap text-sm text-stone-600 hover:text-stone-900"
               >
                 Team
               </Link>
@@ -57,14 +60,14 @@ export default async function Nav() {
           {(isAdmin || isManager) && (
             <Link
               href="/admin/progress"
-              className="text-sm text-stone-600 hover:text-stone-900"
+              className="whitespace-nowrap text-sm text-stone-600 hover:text-stone-900"
             >
               Progress
             </Link>
           )}
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-stone-500">
+          <span className="whitespace-nowrap text-sm text-stone-500">
             {profile?.full_name || user.email}
           </span>
           <SignOutButton />
