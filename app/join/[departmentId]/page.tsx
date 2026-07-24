@@ -43,11 +43,9 @@ export default async function JoinPage({
         </p>
       </div>
 
-      <p className="mb-1 text-sm font-semibold uppercase tracking-wide text-brand-dark">
-        {location?.name ?? "PDC Training"}
-      </p>
       <h1 className="mb-6 text-2xl font-semibold text-stone-900">
-        Join as {department.name}
+        Join the {location?.name ?? "PDC Training"} team as a{" "}
+        {department.name}
       </h1>
       <JoinForm departmentId={department.id} />
     </div>
