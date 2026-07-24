@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import type { Department, Location } from "@/lib/types";
 import JoinForm from "@/components/JoinForm";
@@ -27,6 +28,21 @@ export default async function JoinPage({
 
   return (
     <div className="mx-auto max-w-sm">
+      <div className="mb-10 flex flex-col items-center text-center">
+        <Image
+          src="/logo.png"
+          alt="Pretty Decent Concepts"
+          width={366}
+          height={79}
+          priority
+          className="h-auto w-64"
+        />
+        <p className="mt-6 font-serif text-xl italic leading-snug text-brand-ink">
+          &ldquo;Together, we will succeed in creating environments that
+          define a community.&rdquo;
+        </p>
+      </div>
+
       <p className="mb-1 text-sm font-semibold uppercase tracking-wide text-brand-dark">
         {location?.name ?? "PDC Training"}
       </p>
