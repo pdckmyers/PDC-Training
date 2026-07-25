@@ -117,7 +117,13 @@ export default function RichTextEditor({
     const hasImage = imageUrl.length > 0;
     const colspan = hasImage ? 3 : 2;
 
-    let html = "<table>";
+    // Column widths belong on <col> here rather than on individual <td>s:
+    // with table-layout: fixed, per-cell widths are only read off the
+    // table's very first row, and our title row spans every column,
+    // leaving nothing there to read. <colgroup> isn't affected by that.
+    let html = "<table><colgroup>";
+    if (hasImage) html += `<col style="width:${IMAGE_SIZES.Small}">`;
+    html += '<col style="width:30%"><col></colgroup>';
     if (title.trim()) {
       html += `<thead><tr><th colspan="${colspan}">${escapeHtml(title.trim())}</th></tr></thead>`;
     }
@@ -125,7 +131,7 @@ export default function RichTextEditor({
     for (let i = 0; i < rows; i++) {
       const imageCell =
         hasImage && i === 0
-          ? `<td rowspan="${rows}" style="width:${IMAGE_SIZES.Small}"><img src="${escapeHtml(imageUrl)}" alt="" style="width:${IMAGE_SIZES.Small};height:auto" /></td>`
+          ? `<td rowspan="${rows}"><img src="${escapeHtml(imageUrl)}" alt="" style="width:${IMAGE_SIZES.Small};height:auto" /></td>`
           : "";
       html += `<tr>${imageCell}<td><b>Label</b></td><td><i>Detail</i></td></tr>`;
     }
@@ -154,12 +160,18 @@ export default function RichTextEditor({
     }
     img.style.width = width;
     img.style.height = "auto";
-    // If this image is the picture in a table's spanning cell, keep the
-    // cell's own width in sync -- otherwise the table's auto-layout
-    // treats that column as unconstrained and stretches it (and the
-    // image inside) past its real size.
+    // If this image is the picture in a table column, keep that column's
+    // <col> width in sync too -- with table-layout: fixed the column's
+    // rendered width comes from <colgroup>, not from the cell, so
+    // resizing just the image would leave the column stuck at its old
+    // width.
     const cell = img.closest("td");
-    if (cell) cell.style.width = width;
+    const table = img.closest("table");
+    if (cell && table) {
+      const cols = table.querySelectorAll<HTMLElement>("colgroup > col");
+      const col = cols[cell.cellIndex];
+      if (col) col.style.width = width;
+    }
     onChange(ref.current?.innerHTML ?? "");
   }
 
