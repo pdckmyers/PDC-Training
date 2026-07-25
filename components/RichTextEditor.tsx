@@ -123,7 +123,7 @@ export default function RichTextEditor({
     // leaving nothing there to read. <colgroup> isn't affected by that.
     let html = "<table><colgroup>";
     if (hasImage) html += `<col style="width:${IMAGE_SIZES.Small}">`;
-    html += '<col style="width:30%"><col></colgroup>';
+    html += '<col style="width:20%"><col></colgroup>';
     if (title.trim()) {
       html += `<thead><tr><th colspan="${colspan}">${escapeHtml(title.trim())}</th></tr></thead>`;
     }
