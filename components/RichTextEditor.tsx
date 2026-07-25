@@ -26,16 +26,17 @@ function ToolbarButton({
   );
 }
 
-// Fixed pixel widths, not percentages: a percentage width on an <img>
-// inside a table cell doesn't reliably shrink it (the cell's own width
-// is derived from the image's size in the first place, so there's
-// nothing stable for the percentage to be relative to), which is what
-// let table pictures render huge and push the label/value columns off
-// to the side. Fixed pixel widths work the same everywhere.
+// Percentages, not fixed pixels: both a standalone image's paragraph and
+// a table's <colgroup> column are already responsive (they're a share of
+// the page's own width), so sizing images as a percentage of whichever
+// container they're in makes them scale with the screen automatically.
+// (A stray percentage directly on a table <img> doesn't work -- its cell
+// is what needs the percentage; resizeSelectedImage below sets the <img>
+// itself to 100% and puts the chosen percentage on the <col> instead.)
 const IMAGE_SIZES = {
-  Small: "150px",
-  Medium: "300px",
-  Large: "500px",
+  Small: "25%",
+  Medium: "40%",
+  Large: "60%",
 } as const;
 
 function escapeHtml(s: string): string {
@@ -131,7 +132,7 @@ export default function RichTextEditor({
     for (let i = 0; i < rows; i++) {
       const imageCell =
         hasImage && i === 0
-          ? `<td rowspan="${rows}"><img src="${escapeHtml(imageUrl)}" alt="" style="width:${IMAGE_SIZES.Small};height:auto" /></td>`
+          ? `<td rowspan="${rows}"><img src="${escapeHtml(imageUrl)}" alt="" style="width:100%;height:auto" /></td>`
           : "";
       html += `<tr>${imageCell}<td><b>Label</b></td><td><i>Detail</i></td></tr>`;
     }
@@ -160,26 +161,29 @@ export default function RichTextEditor({
     selectedTableRef.current = el ? el.closest("table") : null;
   }
 
-  function resizeSelectedImage(e: React.MouseEvent, width: string) {
+  function resizeSelectedImage(e: React.MouseEvent, size: string) {
     e.preventDefault();
     const img = selectedImageRef.current;
     if (!img) {
       window.alert("Click an image in the text first, then pick a size.");
       return;
     }
-    img.style.width = width;
-    img.style.height = "auto";
-    // If this image is the picture in a table column, keep that column's
-    // <col> width in sync too -- with table-layout: fixed the column's
-    // rendered width comes from <colgroup>, not from the cell, so
-    // resizing just the image would leave the column stuck at its old
-    // width.
     const cell = img.closest("td");
     const table = img.closest("table");
     if (cell && table) {
+      // A table picture's real size comes from its <colgroup> column
+      // (table-layout: fixed reads widths from there, not the cell), so
+      // the image itself just fills whatever width that column ends up
+      // being -- that's also what keeps it a percentage of the table's
+      // own (already responsive) width instead of a fixed pixel size.
+      img.style.width = "100%";
+      img.style.height = "auto";
       const cols = table.querySelectorAll<HTMLElement>("colgroup > col");
       const col = cols[cell.cellIndex];
-      if (col) col.style.width = width;
+      if (col) col.style.width = size;
+    } else {
+      img.style.width = size;
+      img.style.height = "auto";
     }
     onChange(ref.current?.innerHTML ?? "");
   }
@@ -300,7 +304,7 @@ export default function RichTextEditor({
         contentEditable
         onInput={() => onChange(ref.current?.innerHTML ?? "")}
         onClick={handleEditorClick}
-        className="min-h-[180px] rounded-b-md border border-stone-300 px-3 py-2 font-serif text-lg text-brand-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand [&_div]:mb-3 [&_hr]:my-3 [&_hr]:border-t-2 [&_hr]:border-dashed [&_hr]:border-brand [&_img]:my-2 [&_img]:max-w-full [&_img]:rounded-md [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_table]:my-3 [&_table]:w-full [&_table]:table-fixed [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:rounded-lg [&_table]:border [&_table]:border-stone-300 [&_th]:border [&_th]:border-stone-300 [&_th]:bg-brand [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_th]:text-white [&_td]:border [&_td]:border-stone-300 [&_td]:px-3 [&_td]:py-2 [&_td]:align-top [&_td[rowspan]]:align-middle"
+        className="min-h-[180px] overflow-x-auto rounded-b-md border border-stone-300 px-3 py-2 font-serif text-lg text-brand-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand [&_div]:mb-3 [&_hr]:my-3 [&_hr]:border-t-2 [&_hr]:border-dashed [&_hr]:border-brand [&_img]:my-2 [&_img]:max-w-full [&_img]:rounded-md [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_table]:my-3 [&_table]:w-full [&_table]:table-fixed [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:rounded-lg [&_table]:border [&_table]:border-stone-300 [&_th]:border [&_th]:border-stone-300 [&_th]:bg-brand [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_th]:text-white [&_td]:border [&_td]:border-stone-300 [&_td]:px-3 [&_td]:py-2 [&_td]:align-top [&_td[rowspan]]:align-middle"
       />
       <p className="mt-1 text-xs text-stone-500">
         The dashed line is a page break — employees see it as separate pages
