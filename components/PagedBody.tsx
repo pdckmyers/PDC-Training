@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ModuleCompletion from "./ModuleCompletion";
 import type { Completion, QuizQuestion } from "@/lib/types";
 
@@ -20,6 +20,17 @@ export default function PagedBody({
 }) {
   const [index, setIndex] = useState(0);
   const onQuiz = index === pages.length;
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    // Skip on mount -- only scroll when Next/Previous actually changes
+    // the page, not on the page's initial load.
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [index]);
 
   if (pages.length === 0) {
     return (
