@@ -13,6 +13,12 @@ const ALLOWED_TAGS = [
   "p",
   "div",
   "img",
+  "table",
+  "thead",
+  "tbody",
+  "tr",
+  "th",
+  "td",
 ];
 
 export function sanitizeModuleBody(html: string): string {
@@ -20,6 +26,8 @@ export function sanitizeModuleBody(html: string): string {
     allowedTags: ALLOWED_TAGS,
     allowedAttributes: {
       img: ["src", "alt", "style"],
+      th: ["colspan"],
+      td: ["colspan"],
     },
     // Only allow https:// image sources -- blocks javascript:/data: URI
     // injection through a crafted src attribute.

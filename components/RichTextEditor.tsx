@@ -32,6 +32,14 @@ const IMAGE_SIZES = {
   Large: "100%",
 } as const;
 
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 export default function RichTextEditor({
   value,
   onChange,
@@ -42,6 +50,7 @@ export default function RichTextEditor({
   const ref = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
   const selectedImageRef = useRef<HTMLImageElement | null>(null);
+  const selectedTableRef = useRef<HTMLTableElement | null>(null);
 
   useEffect(() => {
     if (ref.current && !initialized.current) {
@@ -78,9 +87,38 @@ export default function RichTextEditor({
     onChange(ref.current?.innerHTML ?? "");
   }
 
+  function insertTable(e: React.MouseEvent) {
+    e.preventDefault();
+    const rowsInput = window.prompt(
+      "How many rows (label/value pairs)?",
+      "4"
+    );
+    if (!rowsInput) return;
+    const rows = Math.max(1, Math.min(20, parseInt(rowsInput, 10) || 4));
+    const title = window.prompt("Table title (optional):", "") ?? "";
+
+    let html = "<table>";
+    if (title.trim()) {
+      html += `<thead><tr><th colspan="2">${escapeHtml(title.trim())}</th></tr></thead>`;
+    }
+    html += "<tbody>";
+    for (let i = 0; i < rows; i++) {
+      html += "<tr><td><b>Label</b></td><td><i>Detail</i></td></tr>";
+    }
+    html += "</tbody></table><br>";
+
+    document.execCommand("insertHTML", false, html);
+    onChange(ref.current?.innerHTML ?? "");
+  }
+
   function handleEditorClick(e: React.MouseEvent) {
+    const target = e.target;
     selectedImageRef.current =
-      e.target instanceof HTMLImageElement ? e.target : null;
+      target instanceof HTMLImageElement ? target : null;
+    selectedTableRef.current =
+      target instanceof HTMLElement
+        ? target.closest("table")
+        : null;
   }
 
   function resizeSelectedImage(e: React.MouseEvent, width: string) {
@@ -92,6 +130,36 @@ export default function RichTextEditor({
     }
     img.style.width = width;
     img.style.height = "auto";
+    onChange(ref.current?.innerHTML ?? "");
+  }
+
+  function addTableRow(e: React.MouseEvent) {
+    e.preventDefault();
+    const table = selectedTableRef.current;
+    if (!table) {
+      window.alert("Click inside a table first, then add a row.");
+      return;
+    }
+    const tbody = table.querySelector("tbody") ?? table;
+    const newRow = document.createElement("tr");
+    newRow.innerHTML = "<td><b>Label</b></td><td><i>Detail</i></td>";
+    tbody.appendChild(newRow);
+    onChange(ref.current?.innerHTML ?? "");
+  }
+
+  function removeTableRow(e: React.MouseEvent) {
+    e.preventDefault();
+    const table = selectedTableRef.current;
+    if (!table) {
+      window.alert("Click inside a table first, then remove a row.");
+      return;
+    }
+    const rows = table.querySelectorAll("tbody tr");
+    if (rows.length <= 1) {
+      window.alert("This table only has one row left.");
+      return;
+    }
+    rows[rows.length - 1].remove();
     onChange(ref.current?.innerHTML ?? "");
   }
 
@@ -130,6 +198,31 @@ export default function RichTextEditor({
         <span className="mx-1 h-4 w-px bg-stone-300" />
         <button
           type="button"
+          title="Insert a table here"
+          onMouseDown={insertTable}
+          className="rounded px-2.5 py-1 text-sm text-stone-700 hover:bg-stone-200"
+        >
+          ▦ Table
+        </button>
+        <button
+          type="button"
+          title="Click inside a table, then add a row"
+          onMouseDown={addTableRow}
+          className="rounded px-2.5 py-1 text-sm text-stone-700 hover:bg-stone-200"
+        >
+          + Row
+        </button>
+        <button
+          type="button"
+          title="Click inside a table, then remove its last row"
+          onMouseDown={removeTableRow}
+          className="rounded px-2.5 py-1 text-sm text-stone-700 hover:bg-stone-200"
+        >
+          − Row
+        </button>
+        <span className="mx-1 h-4 w-px bg-stone-300" />
+        <button
+          type="button"
           title="Split into a new page here"
           onMouseDown={insertPageBreak}
           className="rounded px-2.5 py-1 text-sm text-stone-700 hover:bg-stone-200"
@@ -142,13 +235,14 @@ export default function RichTextEditor({
         contentEditable
         onInput={() => onChange(ref.current?.innerHTML ?? "")}
         onClick={handleEditorClick}
-        className="min-h-[180px] rounded-b-md border border-stone-300 px-3 py-2 font-serif text-lg text-brand-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand [&_div]:mb-3 [&_hr]:my-3 [&_hr]:border-t-2 [&_hr]:border-dashed [&_hr]:border-brand [&_img]:my-2 [&_img]:max-w-full [&_img]:rounded-md [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5"
+        className="min-h-[180px] rounded-b-md border border-stone-300 px-3 py-2 font-serif text-lg text-brand-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand [&_div]:mb-3 [&_hr]:my-3 [&_hr]:border-t-2 [&_hr]:border-dashed [&_hr]:border-brand [&_img]:my-2 [&_img]:max-w-full [&_img]:rounded-md [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_table]:my-3 [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:rounded-lg [&_table]:border [&_table]:border-stone-300 [&_th]:border [&_th]:border-stone-300 [&_th]:bg-brand [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_th]:text-white [&_td]:border [&_td]:border-stone-300 [&_td]:px-3 [&_td]:py-2 [&_td]:align-top"
       />
       <p className="mt-1 text-xs text-stone-500">
         The dashed line is a page break — employees see it as separate pages
         with Next/Previous buttons. Images are inserted where your cursor is,
         so put one before a page break to keep it on that page. Click an
-        image, then use S / M / L to resize it.
+        image, then use S / M / L to resize it. Click inside a table, then
+        use + Row / − Row to add or remove rows.
       </p>
     </div>
   );
