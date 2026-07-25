@@ -20,7 +20,7 @@ export default async function Nav() {
   const isManager = profile?.role === "manager";
 
   return (
-    <header className="border-b border-stone-200 bg-white">
+    <header className="border-b border-stone-200 bg-white print:hidden">
       <nav className="mx-auto flex max-w-4xl flex-col gap-2 px-6 py-4">
         <Link
           href="/modules"

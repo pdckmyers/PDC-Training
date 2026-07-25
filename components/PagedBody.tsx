@@ -36,6 +36,52 @@ function scaleTablesToFit(container: HTMLElement) {
   }
 }
 
+// On screen, only the current page is ever in the DOM (that's how the
+// Next/Previous pagination works), so there's nothing for print CSS to
+// reveal for the other pages. This renders every page (and the quiz, as
+// plain text -- no point printing interactive radio inputs) so a printed
+// copy is the complete module, not just whatever page was on screen.
+function PrintableModule({
+  pages,
+  quiz,
+}: {
+  pages: string[];
+  quiz: QuizQuestion[];
+}) {
+  if (pages.length === 0 && quiz.length === 0) return null;
+
+  return (
+    <div className="hidden print:block">
+      {pages.map((page, i) => (
+        <div
+          key={i}
+          className={`${PROSE_CLASSES} ${i > 0 ? "break-before-page" : ""}`}
+          dangerouslySetInnerHTML={{ __html: page }}
+        />
+      ))}
+      {quiz.length > 0 && (
+        <div className={pages.length > 0 ? "break-before-page" : ""}>
+          <h2 className="mb-3 font-serif text-xl font-semibold text-brand-ink">
+            Quick check
+          </h2>
+          {quiz.map((q, i) => (
+            <div key={i} className="mb-4">
+              <p className="font-medium text-brand-ink">
+                {i + 1}. {q.question}
+              </p>
+              <ul className="mt-1 list-disc pl-6 text-brand-ink">
+                {q.options.map((option, j) => (
+                  <li key={j}>{option}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PagedBody({
   pages,
   moduleId,
@@ -75,52 +121,63 @@ export default function PagedBody({
 
   if (pages.length === 0) {
     return (
-      <ModuleCompletion
-        moduleId={moduleId}
-        quiz={quiz}
-        existingCompletion={existingCompletion}
-      />
+      <>
+        <PrintableModule pages={pages} quiz={quiz} />
+        <div className="print:hidden">
+          <ModuleCompletion
+            moduleId={moduleId}
+            quiz={quiz}
+            existingCompletion={existingCompletion}
+          />
+        </div>
+      </>
     );
   }
 
   return (
     <div>
-      {onQuiz ? (
-        <ModuleCompletion
-          moduleId={moduleId}
-          quiz={quiz}
-          existingCompletion={existingCompletion}
-        />
-      ) : (
-        <div
-          ref={contentRef}
-          className={PROSE_CLASSES}
-          dangerouslySetInnerHTML={{ __html: pages[index] }}
-        />
-      )}
-      <div className="mt-6 flex items-center justify-between border-t border-stone-200 pt-4">
-        <button
-          type="button"
-          onClick={() => setIndex((i) => Math.max(0, i - 1))}
-          disabled={index === 0}
-          className="rounded-md border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-100 disabled:opacity-40"
-        >
-          ← Previous
-        </button>
-        <span className="text-sm font-medium text-stone-500">
-          {onQuiz ? "Quick check" : `Page ${index + 1} of ${pages.length + 1}`}
-        </span>
+      <PrintableModule pages={pages} quiz={quiz} />
+
+      <div className="print:hidden">
         {onQuiz ? (
-          <span className="w-[86px]" aria-hidden="true" />
+          <ModuleCompletion
+            moduleId={moduleId}
+            quiz={quiz}
+            existingCompletion={existingCompletion}
+          />
         ) : (
+          <div
+            ref={contentRef}
+            className={PROSE_CLASSES}
+            dangerouslySetInnerHTML={{ __html: pages[index] }}
+          />
+        )}
+        <div className="mt-6 flex items-center justify-between border-t border-stone-200 pt-4">
           <button
             type="button"
-            onClick={() => setIndex((i) => Math.min(pages.length, i + 1))}
-            className="rounded-md border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-100"
+            onClick={() => setIndex((i) => Math.max(0, i - 1))}
+            disabled={index === 0}
+            className="rounded-md border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-100 disabled:opacity-40"
           >
-            Next →
+            ← Previous
           </button>
-        )}
+          <span className="text-sm font-medium text-stone-500">
+            {onQuiz
+              ? "Quick check"
+              : `Page ${index + 1} of ${pages.length + 1}`}
+          </span>
+          {onQuiz ? (
+            <span className="w-[86px]" aria-hidden="true" />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIndex((i) => Math.min(pages.length, i + 1))}
+              className="rounded-md border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-100"
+            >
+              Next →
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
