@@ -5,7 +5,7 @@ import ModuleCompletion from "./ModuleCompletion";
 import type { Completion, QuizQuestion } from "@/lib/types";
 
 const PROSE_CLASSES =
-  "font-serif text-lg leading-relaxed text-brand-ink overflow-x-auto [&_div]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1 [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-lg [&_img]:border [&_img]:border-stone-200 [&_p]:mb-4 [&_table]:my-4 [&_table]:w-[640px] [&_table]:table-fixed [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:rounded-lg [&_table]:border [&_table]:border-stone-300 [&_th]:border [&_th]:border-stone-300 [&_th]:bg-brand [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_th]:text-white [&_td]:border [&_td]:border-stone-300 [&_td]:px-4 [&_td]:py-2 [&_td]:align-top [&_td]:break-words [&_td[rowspan]]:align-middle";
+  "font-serif text-lg leading-relaxed text-brand-ink overflow-x-auto [&_div]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1 [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-lg [&_img]:border [&_img]:border-stone-200 [&_p]:mb-4 [&_table]:my-4 [&_table]:w-[640px] [&_table]:table-fixed [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:rounded-lg [&_table]:border [&_table]:border-stone-300 [&_table]:break-inside-avoid [&_th]:border [&_th]:border-stone-300 [&_th]:bg-brand [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_th]:text-white [&_td]:border [&_td]:border-stone-300 [&_td]:px-4 [&_td]:py-2 [&_td]:align-top [&_td]:break-words [&_td[rowspan]]:align-middle";
 
 // Tables are authored at a fixed "designed" width (matching PROSE_CLASSES'
 // [&_table]:w-[640px] above) so their columns/image/text always keep the
@@ -41,6 +41,13 @@ function scaleTablesToFit(container: HTMLElement) {
 // reveal for the other pages. This renders every page (and the quiz, as
 // plain text -- no point printing interactive radio inputs) so a printed
 // copy is the complete module, not just whatever page was on screen.
+//
+// A page break in the editor just paces the on-screen reading experience
+// (e.g. "start the next recipe on a fresh screen") -- it isn't a signal
+// that each one deserves its own printed sheet, and forcing that wasted
+// paper on modules with lots of short pages. Pages flow together with
+// just a divider between them; the browser only starts an actual new
+// printed page when content naturally runs out of room.
 function PrintableModule({
   pages,
   quiz,
@@ -53,19 +60,22 @@ function PrintableModule({
   return (
     <div className="hidden print:block">
       {pages.map((page, i) => (
-        <div
-          key={i}
-          className={`${PROSE_CLASSES} ${i > 0 ? "break-before-page" : ""}`}
-          dangerouslySetInnerHTML={{ __html: page }}
-        />
+        <div key={i}>
+          {i > 0 && <hr className="my-6 border-stone-300" />}
+          <div
+            className={PROSE_CLASSES}
+            dangerouslySetInnerHTML={{ __html: page }}
+          />
+        </div>
       ))}
       {quiz.length > 0 && (
-        <div className={pages.length > 0 ? "break-before-page" : ""}>
+        <div>
+          {pages.length > 0 && <hr className="my-6 border-stone-300" />}
           <h2 className="mb-3 font-serif text-xl font-semibold text-brand-ink">
             Quick check
           </h2>
           {quiz.map((q, i) => (
-            <div key={i} className="mb-4">
+            <div key={i} className="mb-4 break-inside-avoid">
               <p className="font-medium text-brand-ink">
                 {i + 1}. {q.question}
               </p>
