@@ -125,7 +125,7 @@ export default function RichTextEditor({
     for (let i = 0; i < rows; i++) {
       const imageCell =
         hasImage && i === 0
-          ? `<td rowspan="${rows}"><img src="${escapeHtml(imageUrl)}" alt="" style="width:${IMAGE_SIZES.Small};height:auto" /></td>`
+          ? `<td rowspan="${rows}" style="width:${IMAGE_SIZES.Small}"><img src="${escapeHtml(imageUrl)}" alt="" style="width:${IMAGE_SIZES.Small};height:auto" /></td>`
           : "";
       html += `<tr>${imageCell}<td><b>Label</b></td><td><i>Detail</i></td></tr>`;
     }
@@ -154,6 +154,12 @@ export default function RichTextEditor({
     }
     img.style.width = width;
     img.style.height = "auto";
+    // If this image is the picture in a table's spanning cell, keep the
+    // cell's own width in sync -- otherwise the table's auto-layout
+    // treats that column as unconstrained and stretches it (and the
+    // image inside) past its real size.
+    const cell = img.closest("td");
+    if (cell) cell.style.width = width;
     onChange(ref.current?.innerHTML ?? "");
   }
 
@@ -273,7 +279,7 @@ export default function RichTextEditor({
         contentEditable
         onInput={() => onChange(ref.current?.innerHTML ?? "")}
         onClick={handleEditorClick}
-        className="min-h-[180px] rounded-b-md border border-stone-300 px-3 py-2 font-serif text-lg text-brand-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand [&_div]:mb-3 [&_hr]:my-3 [&_hr]:border-t-2 [&_hr]:border-dashed [&_hr]:border-brand [&_img]:my-2 [&_img]:max-w-full [&_img]:rounded-md [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_table]:my-3 [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:rounded-lg [&_table]:border [&_table]:border-stone-300 [&_th]:border [&_th]:border-stone-300 [&_th]:bg-brand [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_th]:text-white [&_td]:border [&_td]:border-stone-300 [&_td]:px-3 [&_td]:py-2 [&_td]:align-top"
+        className="min-h-[180px] rounded-b-md border border-stone-300 px-3 py-2 font-serif text-lg text-brand-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand [&_div]:mb-3 [&_hr]:my-3 [&_hr]:border-t-2 [&_hr]:border-dashed [&_hr]:border-brand [&_img]:my-2 [&_img]:max-w-full [&_img]:rounded-md [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_table]:my-3 [&_table]:w-full [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:rounded-lg [&_table]:border [&_table]:border-stone-300 [&_th]:border [&_th]:border-stone-300 [&_th]:bg-brand [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_th]:text-white [&_td]:border [&_td]:border-stone-300 [&_td]:px-3 [&_td]:py-2 [&_td]:align-top [&_td[rowspan]]:align-middle"
       />
       <p className="mt-1 text-xs text-stone-500">
         The dashed line is a page break — employees see it as separate pages

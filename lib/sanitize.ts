@@ -27,7 +27,7 @@ export function sanitizeModuleBody(html: string): string {
     allowedAttributes: {
       img: ["src", "alt", "style"],
       th: ["colspan"],
-      td: ["colspan", "rowspan"],
+      td: ["colspan", "rowspan", "style"],
     },
     // Only allow https:// image sources -- blocks javascript:/data: URI
     // injection through a crafted src attribute.
@@ -37,9 +37,15 @@ export function sanitizeModuleBody(html: string): string {
     // Admins can resize an inserted image to small/medium/large -- that's
     // stored as an inline width. Only "width", and only a plain px/%
     // number, is allowed through, so the style attribute can't be used to
-    // smuggle in anything else.
+    // smuggle in anything else. The same is allowed on a picture-column
+    // <td> -- without a matching width on the cell itself, a table's
+    // auto-layout treats that column as unconstrained and stretches it
+    // (along with the image inside) far past the image's real size.
     allowedStyles: {
       img: {
+        width: [/^\d+(?:\.\d+)?(?:px|%)$/],
+      },
+      td: {
         width: [/^\d+(?:\.\d+)?(?:px|%)$/],
       },
     },
