@@ -27,7 +27,7 @@ export function sanitizeModuleBody(html: string): string {
     allowedAttributes: {
       img: ["src", "alt", "style"],
       th: ["colspan"],
-      td: ["colspan"],
+      td: ["colspan", "rowspan"],
     },
     // Only allow https:// image sources -- blocks javascript:/data: URI
     // injection through a crafted src attribute.
