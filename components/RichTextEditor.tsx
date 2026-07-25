@@ -26,10 +26,16 @@ function ToolbarButton({
   );
 }
 
+// Fixed pixel widths, not percentages: a percentage width on an <img>
+// inside a table cell doesn't reliably shrink it (the cell's own width
+// is derived from the image's size in the first place, so there's
+// nothing stable for the percentage to be relative to), which is what
+// let table pictures render huge and push the label/value columns off
+// to the side. Fixed pixel widths work the same everywhere.
 const IMAGE_SIZES = {
-  Small: "33%",
-  Medium: "66%",
-  Large: "100%",
+  Small: "150px",
+  Medium: "300px",
+  Large: "500px",
 } as const;
 
 function escapeHtml(s: string): string {
@@ -119,7 +125,7 @@ export default function RichTextEditor({
     for (let i = 0; i < rows; i++) {
       const imageCell =
         hasImage && i === 0
-          ? `<td rowspan="${rows}"><img src="${escapeHtml(imageUrl)}" alt="" /></td>`
+          ? `<td rowspan="${rows}"><img src="${escapeHtml(imageUrl)}" alt="" style="width:${IMAGE_SIZES.Small};height:auto" /></td>`
           : "";
       html += `<tr>${imageCell}<td><b>Label</b></td><td><i>Detail</i></td></tr>`;
     }
