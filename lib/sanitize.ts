@@ -14,6 +14,8 @@ const ALLOWED_TAGS = [
   "div",
   "img",
   "table",
+  "colgroup",
+  "col",
   "thead",
   "tbody",
   "tr",
@@ -27,7 +29,8 @@ export function sanitizeModuleBody(html: string): string {
     allowedAttributes: {
       img: ["src", "alt", "style"],
       th: ["colspan"],
-      td: ["colspan", "rowspan", "style"],
+      td: ["colspan", "rowspan"],
+      col: ["style"],
     },
     // Only allow https:// image sources -- blocks javascript:/data: URI
     // injection through a crafted src attribute.
@@ -37,15 +40,17 @@ export function sanitizeModuleBody(html: string): string {
     // Admins can resize an inserted image to small/medium/large -- that's
     // stored as an inline width. Only "width", and only a plain px/%
     // number, is allowed through, so the style attribute can't be used to
-    // smuggle in anything else. The same is allowed on a picture-column
-    // <td> -- without a matching width on the cell itself, a table's
-    // auto-layout treats that column as unconstrained and stretches it
-    // (along with the image inside) far past the image's real size.
+    // smuggle in anything else. Column widths for a table live on <col>
+    // (in a <colgroup>) rather than on individual <td>s: with
+    // table-layout: fixed, per-cell widths are only read off the table's
+    // very first row, and a title row spanning every column (as ours
+    // does) leaves nothing there to read -- <colgroup> isn't affected by
+    // that at all.
     allowedStyles: {
       img: {
         width: [/^\d+(?:\.\d+)?(?:px|%)$/],
       },
-      td: {
+      col: {
         width: [/^\d+(?:\.\d+)?(?:px|%)$/],
       },
     },
