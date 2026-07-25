@@ -1,11 +1,40 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import ModuleCompletion from "./ModuleCompletion";
 import type { Completion, QuizQuestion } from "@/lib/types";
 
 const PROSE_CLASSES =
-  "font-serif text-lg leading-relaxed text-brand-ink overflow-x-auto [&_div]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1 [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-lg [&_img]:border [&_img]:border-stone-200 [&_p]:mb-4 [&_table]:my-4 [&_table]:w-[640px] [&_table]:table-fixed [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:rounded-lg [&_table]:border [&_table]:border-stone-300 max-sm:[&_table]:[zoom:0.5] [&_th]:border [&_th]:border-stone-300 [&_th]:bg-brand [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_th]:text-white [&_td]:border [&_td]:border-stone-300 [&_td]:px-4 [&_td]:py-2 [&_td]:align-top [&_td]:break-words [&_td[rowspan]]:align-middle";
+  "font-serif text-lg leading-relaxed text-brand-ink overflow-x-auto [&_div]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1 [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-lg [&_img]:border [&_img]:border-stone-200 [&_p]:mb-4 [&_table]:my-4 [&_table]:w-[640px] [&_table]:table-fixed [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:rounded-lg [&_table]:border [&_table]:border-stone-300 [&_th]:border [&_th]:border-stone-300 [&_th]:bg-brand [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_th]:text-white [&_td]:border [&_td]:border-stone-300 [&_td]:px-4 [&_td]:py-2 [&_td]:align-top [&_td]:break-words [&_td[rowspan]]:align-middle";
+
+// Tables are authored at a fixed "designed" width (matching PROSE_CLASSES'
+// [&_table]:w-[640px] above) so their columns/image/text always keep the
+// same proportions as on desktop. `zoom` would be the simple way to shrink
+// that down to fit a phone, but it's unreliable on iOS Safari in practice
+// (confirmed: it silently did nothing on a real device). `transform: scale`
+// is universally supported, but it doesn't affect layout -- the element
+// still reserves its full, unscaled box -- so each table is wrapped in a
+// div whose height we set explicitly to the scaled-down height, collapsing
+// the leftover space the transform would otherwise leave behind.
+const TABLE_DESIGN_WIDTH = 640;
+
+function scaleTablesToFit(container: HTMLElement) {
+  const tables = Array.from(container.querySelectorAll("table"));
+  for (const table of tables) {
+    let wrapper = table.parentElement;
+    if (!(wrapper instanceof HTMLElement) || !wrapper.dataset.tableScale) {
+      wrapper = document.createElement("div");
+      wrapper.dataset.tableScale = "true";
+      wrapper.style.overflow = "hidden";
+      table.replaceWith(wrapper);
+      wrapper.appendChild(table);
+    }
+    table.style.transformOrigin = "top left";
+    const scale = Math.min(1, wrapper.clientWidth / TABLE_DESIGN_WIDTH);
+    table.style.transform = `scale(${scale})`;
+    wrapper.style.height = `${table.offsetHeight * scale}px`;
+  }
+}
 
 export default function PagedBody({
   pages,
@@ -21,6 +50,7 @@ export default function PagedBody({
   const [index, setIndex] = useState(0);
   const onQuiz = index === pages.length;
   const isFirstRender = useRef(true);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Skip on mount -- only scroll when Next/Previous actually changes
@@ -31,6 +61,17 @@ export default function PagedBody({
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [index]);
+
+  useLayoutEffect(() => {
+    const container = contentRef.current;
+    if (!container) return;
+
+    scaleTablesToFit(container);
+
+    const handleResize = () => scaleTablesToFit(container);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [index, pages]);
 
   if (pages.length === 0) {
     return (
@@ -52,6 +93,7 @@ export default function PagedBody({
         />
       ) : (
         <div
+          ref={contentRef}
           className={PROSE_CLASSES}
           dangerouslySetInnerHTML={{ __html: pages[index] }}
         />
