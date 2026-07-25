@@ -97,13 +97,31 @@ export default function RichTextEditor({
     const rows = Math.max(1, Math.min(20, parseInt(rowsInput, 10) || 4));
     const title = window.prompt("Table title (optional):", "") ?? "";
 
+    let imageUrl = window.prompt(
+      "Picture for this table (optional, paste an https:// URL to add one on the left, or leave blank to skip):",
+      ""
+    );
+    imageUrl = imageUrl?.trim() ?? "";
+    if (imageUrl && !/^https:\/\//i.test(imageUrl)) {
+      window.alert(
+        "That doesn't start with https://, so the picture was skipped."
+      );
+      imageUrl = "";
+    }
+    const hasImage = imageUrl.length > 0;
+    const colspan = hasImage ? 3 : 2;
+
     let html = "<table>";
     if (title.trim()) {
-      html += `<thead><tr><th colspan="2">${escapeHtml(title.trim())}</th></tr></thead>`;
+      html += `<thead><tr><th colspan="${colspan}">${escapeHtml(title.trim())}</th></tr></thead>`;
     }
     html += "<tbody>";
     for (let i = 0; i < rows; i++) {
-      html += "<tr><td><b>Label</b></td><td><i>Detail</i></td></tr>";
+      const imageCell =
+        hasImage && i === 0
+          ? `<td rowspan="${rows}"><img src="${escapeHtml(imageUrl)}" alt="" /></td>`
+          : "";
+      html += `<tr>${imageCell}<td><b>Label</b></td><td><i>Detail</i></td></tr>`;
     }
     html += "</tbody></table><br>";
 
@@ -141,6 +159,14 @@ export default function RichTextEditor({
       return;
     }
     const tbody = table.querySelector("tbody") ?? table;
+    // If the table has a picture column, it's a cell with rowspan on the
+    // first row -- stretch it to also cover the new row instead of giving
+    // the new row its own (empty) picture cell.
+    const imageCell = tbody.querySelector("tr:first-child td[rowspan]");
+    if (imageCell) {
+      const span = parseInt(imageCell.getAttribute("rowspan") ?? "1", 10);
+      imageCell.setAttribute("rowspan", String(span + 1));
+    }
     const newRow = document.createElement("tr");
     newRow.innerHTML = "<td><b>Label</b></td><td><i>Detail</i></td>";
     tbody.appendChild(newRow);
@@ -154,10 +180,16 @@ export default function RichTextEditor({
       window.alert("Click inside a table first, then remove a row.");
       return;
     }
-    const rows = table.querySelectorAll("tbody tr");
+    const tbody = table.querySelector("tbody") ?? table;
+    const rows = tbody.querySelectorAll("tr");
     if (rows.length <= 1) {
       window.alert("This table only has one row left.");
       return;
+    }
+    const imageCell = tbody.querySelector("tr:first-child td[rowspan]");
+    if (imageCell) {
+      const span = parseInt(imageCell.getAttribute("rowspan") ?? "1", 10);
+      if (span > 1) imageCell.setAttribute("rowspan", String(span - 1));
     }
     rows[rows.length - 1].remove();
     onChange(ref.current?.innerHTML ?? "");
@@ -198,7 +230,7 @@ export default function RichTextEditor({
         <span className="mx-1 h-4 w-px bg-stone-300" />
         <button
           type="button"
-          title="Insert a table here"
+          title="Insert a table here, optionally with a picture column"
           onMouseDown={insertTable}
           className="rounded px-2.5 py-1 text-sm text-stone-700 hover:bg-stone-200"
         >
