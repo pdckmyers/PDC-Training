@@ -143,12 +143,21 @@ export default function RichTextEditor({
 
   function handleEditorClick(e: React.MouseEvent) {
     const target = e.target;
-    selectedImageRef.current =
-      target instanceof HTMLImageElement ? target : null;
-    selectedTableRef.current =
-      target instanceof HTMLElement
-        ? target.closest("table")
-        : null;
+    const el = target instanceof HTMLElement ? target : null;
+
+    // A picture cell spans many rows, so it's much taller than the image
+    // sitting (vertically centered) inside it -- a click anywhere in that
+    // empty space lands on the <td>, not the <img>, and used to clear the
+    // selection. Treat a click anywhere in the cell as selecting the
+    // image inside it.
+    let img: HTMLImageElement | null = null;
+    if (el instanceof HTMLImageElement) {
+      img = el;
+    } else if (el) {
+      img = el.closest("td, th")?.querySelector("img") ?? null;
+    }
+    selectedImageRef.current = img;
+    selectedTableRef.current = el ? el.closest("table") : null;
   }
 
   function resizeSelectedImage(e: React.MouseEvent, width: string) {
