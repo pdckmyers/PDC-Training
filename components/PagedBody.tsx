@@ -14,7 +14,22 @@ const PROSE_CLASSES =
   // left, even when a fresh page would've had plenty of room. Shrinking
   // each table's footprint for print is what actually gets two per page,
   // not just letting them flow (that part was already true).
-  " print:text-xs print:leading-snug print:[&_table]:my-1 print:[&_th]:px-2 print:[&_th]:py-0.5 print:[&_td]:px-2 print:[&_td]:py-0.5 print:[&_img]:my-0.5 print:[&_img]:max-h-[120px]";
+  //
+  // Print gets its own table width instead of the 800px screen design
+  // width: on screen, JS (scaleTablesToFit below) shrinks an oversized
+  // table to fit -- but that JS never touches this hidden print-only
+  // markup, so left at 800px a table just overflows the printed page.
+  // `w-full` alone isn't enough, though: some tables were authored with a
+  // fixed pixel width directly on a <col> or <img> (e.g. `width: 300px`),
+  // which under table-fixed layout is a hard floor the table must honor
+  // no matter how narrow its own width is asked to be. `!w-auto` on both
+  // -- beating that inline style the same way the table's own width beats
+  // the screen design width -- lets the table actually shrink to the
+  // page. An image's own width has to reset the same way, and *before*
+  // the max-height below -- height:auto with a fixed width means capping
+  // height alone (without freeing width to shrink with it) squashes the
+  // image instead of scaling it.
+  " print:text-xs print:leading-snug print:[&_table]:my-1 print:[&_table]:w-full print:[&_col]:!w-auto print:[&_th]:px-2 print:[&_th]:py-0.5 print:[&_td]:px-2 print:[&_td]:py-0.5 print:[&_img]:my-0.5 print:[&_img]:!w-auto print:[&_img]:max-h-[120px]";
 
 // Tables are authored at a fixed "designed" width (matching PROSE_CLASSES'
 // [&_table]:w-[800px] above) so their columns/image/text always keep the
