@@ -102,6 +102,18 @@ export default function RichTextEditor({
     );
     if (!rowsInput) return;
     const rows = Math.max(1, Math.min(20, parseInt(rowsInput, 10) || 4));
+
+    // 2 columns is the well-worn "Label / Detail" recipe-card shape used
+    // throughout existing modules -- kept as the default and given its
+    // bold-label styling so that common case is unchanged. Anything else
+    // is a plain, generically-celled grid instead: a 3rd+ column has no
+    // obvious "is this a label or a detail" answer, so there's no
+    // sensible styling to apply to it.
+    const columnsInput = window.prompt("How many columns?", "2");
+    if (!columnsInput) return;
+    const columns = Math.max(1, Math.min(8, parseInt(columnsInput, 10) || 2));
+    const isLabelDetail = columns === 2;
+
     const title = window.prompt("Table title (optional):", "") ?? "";
 
     let imageUrl = window.prompt(
@@ -116,7 +128,7 @@ export default function RichTextEditor({
       imageUrl = "";
     }
     const hasImage = imageUrl.length > 0;
-    const colspan = hasImage ? 3 : 2;
+    const colspan = (hasImage ? 1 : 0) + columns;
 
     // Column widths belong on <col> here rather than on individual <td>s:
     // with table-layout: fixed, per-cell widths are only read off the
@@ -124,7 +136,17 @@ export default function RichTextEditor({
     // leaving nothing there to read. <colgroup> isn't affected by that.
     let html = "<table><colgroup>";
     if (hasImage) html += `<col style="width:${IMAGE_SIZES.Small}">`;
-    html += '<col style="width:20%"><col></colgroup>';
+    if (isLabelDetail) {
+      html += '<col style="width:20%"><col></colgroup>';
+    } else {
+      // Split whatever's left over the image column evenly across the
+      // data columns -- <col> only accepts a plain px/% width (see
+      // sanitize.ts), so an even split is the one that needs no per-table
+      // judgment call.
+      const remaining = hasImage ? 100 - parseInt(IMAGE_SIZES.Small) : 100;
+      const each = (remaining / columns).toFixed(2);
+      html += `<col style="width:${each}%">`.repeat(columns) + "</colgroup>";
+    }
     if (title.trim()) {
       html += `<thead><tr><th colspan="${colspan}">${escapeHtml(title.trim())}</th></tr></thead>`;
     }
@@ -134,7 +156,10 @@ export default function RichTextEditor({
         hasImage && i === 0
           ? `<td rowspan="${rows}"><img src="${escapeHtml(imageUrl)}" alt="" style="width:100%;height:auto" /></td>`
           : "";
-      html += `<tr>${imageCell}<td><b>Label</b></td><td><i>Detail</i></td></tr>`;
+      const dataCells = isLabelDetail
+        ? "<td><b>Label</b></td><td><i>Detail</i></td>"
+        : "<td>Cell</td>".repeat(columns);
+      html += `<tr>${imageCell}${dataCells}</tr>`;
     }
     html += "</tbody></table><br>";
 
@@ -204,8 +229,22 @@ export default function RichTextEditor({
       const span = parseInt(imageCell.getAttribute("rowspan") ?? "1", 10);
       imageCell.setAttribute("rowspan", String(span + 1));
     }
+    // Match whatever shape the table already has instead of assuming the
+    // 2-column Label/Detail default: a later row (any row but the first,
+    // since only the first can carry the rowspan picture cell) shows the
+    // real data-column count directly. With only one row so far, fall
+    // back to the first row's own count, minus the picture cell if it has
+    // one.
+    const rows = tbody.querySelectorAll("tr");
+    const referenceRow = rows[rows.length > 1 ? rows.length - 1 : 0];
+    let dataColumns = referenceRow?.querySelectorAll("td, th").length ?? 2;
+    if (rows.length === 1 && imageCell) dataColumns -= 1;
+
     const newRow = document.createElement("tr");
-    newRow.innerHTML = "<td><b>Label</b></td><td><i>Detail</i></td>";
+    newRow.innerHTML =
+      dataColumns === 2
+        ? "<td><b>Label</b></td><td><i>Detail</i></td>"
+        : "<td>Cell</td>".repeat(dataColumns);
     tbody.appendChild(newRow);
     onChange(ref.current?.innerHTML ?? "");
   }
