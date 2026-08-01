@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Module, QuizQuestion } from "@/lib/types";
 import { toEditableHtml } from "@/lib/sanitize";
 import type { DayOption } from "@/lib/days";
+import type { LocationOption } from "@/lib/locations";
 import RichTextEditor from "@/components/RichTextEditor";
 
 function emptyQuestion(): QuizQuestion {
@@ -17,6 +18,8 @@ export default function ModuleForm({
   existing,
   dayOptions,
   initialDayIds = [],
+  locationOptions = [],
+  initialLocationIds = [],
   backHref = "/admin/modules",
 }: {
   existing?: Module | null;
@@ -24,6 +27,10 @@ export default function ModuleForm({
   dayOptions: DayOption[];
   /** Days this module is already linked to (edit), or pre-checked (create-from-a-day). */
   initialDayIds?: string[];
+  /** Every location, for limiting a Master Your Craft module to specific ones. */
+  locationOptions?: LocationOption[];
+  /** Locations this (general) module is already scoped to, if any. */
+  initialLocationIds?: string[];
   backHref?: string;
 }) {
   const router = useRouter();
@@ -38,10 +45,17 @@ export default function ModuleForm({
   const [published, setPublished] = useState(existing?.published ?? false);
   const [quiz, setQuiz] = useState<QuizQuestion[]>(existing?.quiz ?? []);
   const [dayIds, setDayIds] = useState<string[]>(initialDayIds);
+  const [locationIds, setLocationIds] = useState<string[]>(initialLocationIds);
 
   function toggleDay(id: string) {
     setDayIds((prev) =>
       prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]
+    );
+  }
+
+  function toggleLocation(id: string) {
+    setLocationIds((prev) =>
+      prev.includes(id) ? prev.filter((l) => l !== id) : [...prev, id]
     );
   }
 
@@ -170,6 +184,32 @@ export default function ModuleForm({
       }
     }
 
+    // Location scoping only applies to a Master Your Craft module (no day
+    // checked) -- replace this module's location links with whatever's
+    // checked now, or clear them entirely once it's tied to a day.
+    const { error: clearLocationError } = await supabase
+      .from("module_locations")
+      .delete()
+      .eq("module_id", moduleId!);
+    if (clearLocationError) {
+      setSaving(false);
+      setError(clearLocationError.message);
+      return;
+    }
+
+    if (dayIds.length === 0 && locationIds.length > 0) {
+      const { error: locationLinkError } = await supabase
+        .from("module_locations")
+        .insert(
+          locationIds.map((location_id) => ({ module_id: moduleId, location_id }))
+        );
+      if (locationLinkError) {
+        setSaving(false);
+        setError(locationLinkError.message);
+        return;
+      }
+    }
+
     setSaving(false);
     router.push(backHref);
     router.refresh();
@@ -282,6 +322,33 @@ export default function ModuleForm({
           for a Master Your Craft module visible to every employee.
         </p>
       </div>
+
+      {dayIds.length === 0 && locationOptions.length > 0 && (
+        <div className="flex flex-col gap-1 text-sm text-stone-700">
+          Limit Master Your Craft to these locations (optional)
+          <div className="max-h-48 overflow-y-auto rounded-md border border-stone-300 p-2">
+            {locationOptions.map((location) => (
+              <label
+                key={location.id}
+                className="flex items-center gap-2 rounded px-2 py-1.5 text-sm text-stone-800 hover:bg-stone-50"
+              >
+                <input
+                  type="checkbox"
+                  checked={locationIds.includes(location.id)}
+                  onChange={() => toggleLocation(location.id)}
+                  className="text-brand focus:ring-brand"
+                />
+                {location.name}
+              </label>
+            ))}
+          </div>
+          <p className="text-xs text-stone-500">
+            Leave everything unchecked to show this Master Your Craft module
+            to every employee at every location. Check one or more locations
+            to limit it to just those.
+          </p>
+        </div>
+      )}
 
       <label className="flex items-center gap-2 text-sm text-stone-700">
         <input

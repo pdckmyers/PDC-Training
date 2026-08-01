@@ -18,20 +18,30 @@ function dayLabel(row: ModuleDayLabelRow["days"]): string {
   return [locationName, departmentName, row.title].filter(Boolean).join(" — ");
 }
 
+interface ModuleLocationLabelRow {
+  module_id: string;
+  locations: { name: string } | null;
+}
+
 export default async function AdminModulesPage() {
   const supabase = await createClient();
 
-  const [{ data: modules }, { data: moduleDayRows }] = await Promise.all([
-    supabase
-      .from("modules")
-      .select("*")
-      .order("sort_order", { ascending: true })
-      .returns<Module[]>(),
-    supabase
-      .from("module_days")
-      .select("module_id, days(title, departments(name, locations(name)))")
-      .returns<ModuleDayLabelRow[]>(),
-  ]);
+  const [{ data: modules }, { data: moduleDayRows }, { data: moduleLocationRows }] =
+    await Promise.all([
+      supabase
+        .from("modules")
+        .select("*")
+        .order("sort_order", { ascending: true })
+        .returns<Module[]>(),
+      supabase
+        .from("module_days")
+        .select("module_id, days(title, departments(name, locations(name)))")
+        .returns<ModuleDayLabelRow[]>(),
+      supabase
+        .from("module_locations")
+        .select("module_id, locations(name)")
+        .returns<ModuleLocationLabelRow[]>(),
+    ]);
 
   const labelsByModule = new Map<string, string[]>();
   for (const row of moduleDayRows ?? []) {
@@ -40,6 +50,15 @@ export default async function AdminModulesPage() {
     const existing = labelsByModule.get(row.module_id) ?? [];
     existing.push(label);
     labelsByModule.set(row.module_id, existing);
+  }
+
+  const locationLabelsByModule = new Map<string, string[]>();
+  for (const row of moduleLocationRows ?? []) {
+    const name = row.locations?.name;
+    if (!name) continue;
+    const existing = locationLabelsByModule.get(row.module_id) ?? [];
+    existing.push(name);
+    locationLabelsByModule.set(row.module_id, existing);
   }
 
   return (
@@ -77,6 +96,7 @@ export default async function AdminModulesPage() {
           modules={modules.map((mod) => ({
             ...mod,
             labels: labelsByModule.get(mod.id) ?? [],
+            locationLabels: locationLabelsByModule.get(mod.id) ?? [],
           }))}
         />
       )}

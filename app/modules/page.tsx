@@ -14,20 +14,50 @@ export default async function ModulesPage() {
     .eq("id", user!.id)
     .single<Profile>();
 
-  const [{ data: publishedModules }, { data: allLinks }] = await Promise.all([
-    supabase
-      .from("modules")
-      .select("*")
-      .eq("published", true)
-      .order("sort_order", { ascending: true })
-      .returns<Module[]>(),
-    supabase.from("module_days").select("module_id").returns<{ module_id: string }[]>(),
-  ]);
+  const [{ data: publishedModules }, { data: allLinks }, { data: locationLinks }] =
+    await Promise.all([
+      supabase
+        .from("modules")
+        .select("*")
+        .eq("published", true)
+        .order("sort_order", { ascending: true })
+        .returns<Module[]>(),
+      supabase.from("module_days").select("module_id").returns<{ module_id: string }[]>(),
+      supabase
+        .from("module_locations")
+        .select("module_id, location_id")
+        .returns<{ module_id: string; location_id: string }[]>(),
+    ]);
+
+  let employeeLocationId: string | null = null;
+  if (profile?.department_id) {
+    const { data: department } = await supabase
+      .from("departments")
+      .select("location_id")
+      .eq("id", profile.department_id)
+      .single<{ location_id: string }>();
+    employeeLocationId = department?.location_id ?? null;
+  }
+
+  const locationIdsByModule = new Map<string, string[]>();
+  for (const row of locationLinks ?? []) {
+    const existing = locationIdsByModule.get(row.module_id) ?? [];
+    existing.push(row.location_id);
+    locationIdsByModule.set(row.module_id, existing);
+  }
 
   const linkedModuleIds = new Set((allLinks ?? []).map((l) => l.module_id));
-  const generalModules = (publishedModules ?? []).filter(
-    (m) => !linkedModuleIds.has(m.id)
-  );
+  const generalModules = (publishedModules ?? []).filter((m) => {
+    if (linkedModuleIds.has(m.id)) return false;
+    // No locations checked -- a Master Your Craft module is visible to
+    // everyone by default, same as before this scoping existed.
+    const scopedLocationIds = locationIdsByModule.get(m.id);
+    if (!scopedLocationIds || scopedLocationIds.length === 0) return true;
+    return (
+      employeeLocationId !== null &&
+      scopedLocationIds.includes(employeeLocationId)
+    );
+  });
 
   let days: Day[] = [];
   let dayModuleRows: { day_id: string; module: Module }[] = [];
