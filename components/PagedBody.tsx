@@ -5,7 +5,16 @@ import ModuleCompletion from "./ModuleCompletion";
 import type { Completion, QuizQuestion } from "@/lib/types";
 
 const PROSE_CLASSES =
-  "font-serif text-lg leading-relaxed text-brand-ink overflow-x-auto [&_div]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1 [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-lg [&_img]:border [&_img]:border-stone-200 [&_p]:mb-4 [&_table]:my-4 [&_table]:w-[640px] [&_table]:table-fixed [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:rounded-lg [&_table]:border [&_table]:border-stone-300 [&_table]:break-inside-avoid [&_th]:border [&_th]:border-stone-300 [&_th]:bg-brand [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_th]:text-white [&_td]:border [&_td]:border-stone-300 [&_td]:px-4 [&_td]:py-2 [&_td]:align-top [&_td]:break-words [&_td[rowspan]]:align-middle";
+  "font-serif text-lg leading-relaxed text-brand-ink overflow-x-auto [&_div]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1 [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-lg [&_img]:border [&_img]:border-stone-200 [&_p]:mb-4 [&_table]:my-4 [&_table]:w-[640px] [&_table]:table-fixed [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:rounded-lg [&_table]:border [&_table]:border-stone-300 [&_table]:break-inside-avoid [&_th]:border [&_th]:border-stone-300 [&_th]:bg-brand [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_th]:text-white [&_td]:border [&_td]:border-stone-300 [&_td]:px-4 [&_td]:py-2 [&_td]:align-top [&_td]:break-words [&_td[rowspan]]:align-middle" +
+  // A printed table's height is dominated by the screen-sized photo and
+  // roomy padding/type -- neither of which a reader needs on paper. That
+  // height is also why two rarely fit on one printed sheet today: once the
+  // first table is placed, `break-inside: avoid` (above) bumps the second
+  // to a fresh page rather than splitting it if it doesn't fit in what's
+  // left, even when a fresh page would've had plenty of room. Shrinking
+  // each table's footprint for print is what actually gets two per page,
+  // not just letting them flow (that part was already true).
+  " print:text-xs print:leading-snug print:[&_table]:my-1 print:[&_th]:px-2 print:[&_th]:py-0.5 print:[&_td]:px-2 print:[&_td]:py-0.5 print:[&_img]:my-0.5 print:[&_img]:max-h-[120px]";
 
 // Tables are authored at a fixed "designed" width (matching PROSE_CLASSES'
 // [&_table]:w-[640px] above) so their columns/image/text always keep the
@@ -61,7 +70,7 @@ function PrintableModule({
     <div className="hidden print:block">
       {pages.map((page, i) => (
         <div key={i}>
-          {i > 0 && <hr className="my-6 border-stone-300" />}
+          {i > 0 && <hr className="my-2 border-stone-300" />}
           <div
             className={PROSE_CLASSES}
             dangerouslySetInnerHTML={{ __html: page }}
@@ -70,7 +79,7 @@ function PrintableModule({
       ))}
       {quiz.length > 0 && (
         <div>
-          {pages.length > 0 && <hr className="my-6 border-stone-300" />}
+          {pages.length > 0 && <hr className="my-2 border-stone-300" />}
           <h2 className="mb-3 font-serif text-xl font-semibold text-brand-ink">
             Quick check
           </h2>
