@@ -68,9 +68,11 @@ function scaleTablesToFit(container: HTMLElement) {
 
 // On screen, only the current page is ever in the DOM (that's how the
 // Next/Previous pagination works), so there's nothing for print CSS to
-// reveal for the other pages. This renders every page (and the quiz, as
-// plain text -- no point printing interactive radio inputs) so a printed
-// copy is the complete module, not just whatever page was on screen.
+// reveal for the other pages. This renders every page so a printed copy
+// is the complete module, not just whatever page was on screen. The quiz
+// itself doesn't print -- it's a "did you retain this" check for the
+// employee taking the module on screen, not reference material someone
+// printing a recipe/wine card wants a paper copy of.
 //
 // A page break in the editor just paces the on-screen reading experience
 // (e.g. "start the next recipe on a fresh screen") -- it isn't a signal
@@ -78,14 +80,8 @@ function scaleTablesToFit(container: HTMLElement) {
 // paper on modules with lots of short pages. Pages flow together with
 // just a divider between them; the browser only starts an actual new
 // printed page when content naturally runs out of room.
-function PrintableModule({
-  pages,
-  quiz,
-}: {
-  pages: string[];
-  quiz: QuizQuestion[];
-}) {
-  if (pages.length === 0 && quiz.length === 0) return null;
+function PrintableModule({ pages }: { pages: string[] }) {
+  if (pages.length === 0) return null;
 
   return (
     <div className="hidden print:block">
@@ -98,26 +94,6 @@ function PrintableModule({
           />
         </div>
       ))}
-      {quiz.length > 0 && (
-        <div>
-          {pages.length > 0 && <hr className="my-2 border-stone-300" />}
-          <h2 className="mb-3 font-serif text-xl font-semibold text-brand-ink">
-            Quick check
-          </h2>
-          {quiz.map((q, i) => (
-            <div key={i} className="mb-4 break-inside-avoid">
-              <p className="font-medium text-brand-ink">
-                {i + 1}. {q.question}
-              </p>
-              <ul className="mt-1 list-disc pl-6 text-brand-ink">
-                {q.options.map((option, j) => (
-                  <li key={j}>{option}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -162,7 +138,7 @@ export default function PagedBody({
   if (pages.length === 0) {
     return (
       <>
-        <PrintableModule pages={pages} quiz={quiz} />
+        <PrintableModule pages={pages} />
         <div className="print:hidden">
           <ModuleCompletion
             moduleId={moduleId}
@@ -176,7 +152,7 @@ export default function PagedBody({
 
   return (
     <div>
-      <PrintableModule pages={pages} quiz={quiz} />
+      <PrintableModule pages={pages} />
 
       <div className="print:hidden">
         {onQuiz ? (
