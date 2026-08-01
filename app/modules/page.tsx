@@ -113,9 +113,14 @@ export default async function ModulesPage() {
 
       <div>
         {days.length > 0 && (
-          <h2 className="mb-3 text-lg font-semibold text-stone-900">
-            Master Your Craft
-          </h2>
+          <div className="mb-3">
+            <h2 className="text-lg font-semibold text-stone-900">
+              Master Your Craft
+            </h2>
+            <p className="text-sm text-stone-500">
+              Optional — go above and beyond.
+            </p>
+          </div>
         )}
 
         {generalModules.length === 0 && days.length === 0 && (
