@@ -5,7 +5,7 @@ import ModuleCompletion from "./ModuleCompletion";
 import type { Completion, QuizQuestion } from "@/lib/types";
 
 const PROSE_CLASSES =
-  "font-serif text-lg leading-relaxed text-brand-ink overflow-x-auto [&_div]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1 [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-lg [&_img]:border [&_img]:border-stone-200 [&_p]:mb-4 [&_table]:my-4 [&_table]:w-[640px] [&_table]:table-fixed [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:rounded-lg [&_table]:border [&_table]:border-stone-300 [&_table]:break-inside-avoid [&_th]:border [&_th]:border-stone-300 [&_th]:bg-brand [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_th]:text-white [&_td]:border [&_td]:border-stone-300 [&_td]:px-4 [&_td]:py-2 [&_td]:align-top [&_td]:break-words [&_td[rowspan]]:align-middle" +
+  "font-serif text-lg leading-relaxed text-brand-ink overflow-x-auto [&_div]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1 [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-lg [&_img]:border [&_img]:border-stone-200 [&_p]:mb-4 [&_table]:my-4 [&_table]:w-[800px] [&_table]:table-fixed [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:rounded-lg [&_table]:border [&_table]:border-stone-300 [&_table]:break-inside-avoid [&_th]:border [&_th]:border-stone-300 [&_th]:bg-brand [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_th]:text-white [&_td]:border [&_td]:border-stone-300 [&_td]:px-4 [&_td]:py-2 [&_td]:align-top [&_td]:break-words [&_td[rowspan]]:align-middle" +
   // A printed table's height is dominated by the screen-sized photo and
   // roomy padding/type -- neither of which a reader needs on paper. That
   // height is also why two rarely fit on one printed sheet today: once the
@@ -17,7 +17,7 @@ const PROSE_CLASSES =
   " print:text-xs print:leading-snug print:[&_table]:my-1 print:[&_th]:px-2 print:[&_th]:py-0.5 print:[&_td]:px-2 print:[&_td]:py-0.5 print:[&_img]:my-0.5 print:[&_img]:max-h-[120px]";
 
 // Tables are authored at a fixed "designed" width (matching PROSE_CLASSES'
-// [&_table]:w-[640px] above) so their columns/image/text always keep the
+// [&_table]:w-[800px] above) so their columns/image/text always keep the
 // same proportions as on desktop. `zoom` would be the simple way to shrink
 // that down to fit a phone, but it's unreliable on iOS Safari in practice
 // (confirmed: it silently did nothing on a real device). `transform: scale`
@@ -25,7 +25,13 @@ const PROSE_CLASSES =
 // still reserves its full, unscaled box -- so each table is wrapped in a
 // div whose height we set explicitly to the scaled-down height, collapsing
 // the leftover space the transform would otherwise leave behind.
-const TABLE_DESIGN_WIDTH = 640;
+//
+// 800px (not the original 640px) so the 20%-wide label column a table
+// gets by default has enough room for a longer label like "Palate/
+// Flavor:" to stay on one line instead of breaking mid-word -- that
+// happened on a real table and 640px only left about 96px for the label
+// text, well under the ~110px "Palate/Flavor:" needs.
+const TABLE_DESIGN_WIDTH = 800;
 
 function scaleTablesToFit(container: HTMLElement) {
   const tables = Array.from(container.querySelectorAll("table"));
