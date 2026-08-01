@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { Module } from "@/lib/types";
+import ModuleSearchList from "@/components/admin/ModuleSearchList";
 
 interface ModuleDayLabelRow {
   module_id: string;
@@ -71,39 +72,14 @@ export default async function AdminModulesPage() {
         </p>
       )}
 
-      <ul className="flex flex-col gap-3">
-        {modules?.map((mod) => {
-          const labels = labelsByModule.get(mod.id) ?? [];
-          return (
-            <li key={mod.id}>
-              <Link
-                href={`/admin/modules/${mod.id}/edit`}
-                className="flex items-center justify-between rounded-lg border border-stone-200 bg-white px-5 py-4 hover:border-brand"
-              >
-                <div>
-                  <h2 className="font-medium text-stone-900">{mod.title}</h2>
-                  <p className="mt-0.5 text-sm text-stone-500">
-                    {labels.length === 0
-                      ? "General — all employees"
-                      : labels.join(" · ")}
-                    {" · "}
-                    {mod.quiz.length} question{mod.quiz.length === 1 ? "" : "s"}
-                  </p>
-                </div>
-                <span
-                  className={`ml-4 flex-none rounded-full px-3 py-1 text-xs font-semibold ${
-                    mod.published
-                      ? "bg-green-100 text-green-700"
-                      : "bg-stone-100 text-stone-500"
-                  }`}
-                >
-                  {mod.published ? "Published" : "Draft"}
-                </span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+      {modules && modules.length > 0 && (
+        <ModuleSearchList
+          modules={modules.map((mod) => ({
+            ...mod,
+            labels: labelsByModule.get(mod.id) ?? [],
+          }))}
+        />
+      )}
     </div>
   );
 }
