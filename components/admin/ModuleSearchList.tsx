@@ -6,6 +6,7 @@ import type { Module } from "@/lib/types";
 
 interface ModuleWithLabels extends Module {
   labels: string[];
+  locationLabels: string[];
 }
 
 export default function ModuleSearchList({
@@ -18,7 +19,9 @@ export default function ModuleSearchList({
   const normalizedQuery = query.trim().toLowerCase();
   const filtered = normalizedQuery
     ? modules.filter((mod) => {
-        const haystack = [mod.title, ...mod.labels].join(" ").toLowerCase();
+        const haystack = [mod.title, ...mod.labels, ...mod.locationLabels]
+          .join(" ")
+          .toLowerCase();
         return haystack.includes(normalizedQuery);
       })
     : modules;
@@ -50,7 +53,9 @@ export default function ModuleSearchList({
                 <h2 className="font-medium text-stone-900">{mod.title}</h2>
                 <p className="mt-0.5 text-sm text-stone-500">
                   {mod.labels.length === 0
-                    ? "Master Your Craft — all employees"
+                    ? mod.locationLabels.length === 0
+                      ? "Master Your Craft — all employees"
+                      : `Master Your Craft — ${mod.locationLabels.join(", ")}`
                     : mod.labels.join(" · ")}
                   {" · "}
                   {mod.quiz.length} question{mod.quiz.length === 1 ? "" : "s"}

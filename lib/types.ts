@@ -66,6 +66,13 @@ export interface ModuleDay {
   created_at: string;
 }
 
+export interface ModuleLocation {
+  id: string;
+  module_id: string;
+  location_id: string;
+  created_at: string;
+}
+
 export interface Completion {
   id: string;
   user_id: string;

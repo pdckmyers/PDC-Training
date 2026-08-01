@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Module } from "@/lib/types";
 import { getAllDayOptions, getModuleDayIds } from "@/lib/days";
+import { getAllLocationOptions, getModuleLocationIds } from "@/lib/locations";
 import ModuleForm from "@/components/ModuleForm";
 
 export default async function EditModulePage({
@@ -20,17 +21,26 @@ export default async function EditModulePage({
 
   if (!mod) notFound();
 
-  const [dayOptions, initialDayIds] = await Promise.all([
-    getAllDayOptions(),
-    getModuleDayIds(mod.id),
-  ]);
+  const [dayOptions, initialDayIds, locationOptions, initialLocationIds] =
+    await Promise.all([
+      getAllDayOptions(),
+      getModuleDayIds(mod.id),
+      getAllLocationOptions(),
+      getModuleLocationIds(mod.id),
+    ]);
 
   return (
     <div>
       <h1 className="mb-6 text-2xl font-semibold text-stone-900">
         Edit module
       </h1>
-      <ModuleForm existing={mod} dayOptions={dayOptions} initialDayIds={initialDayIds} />
+      <ModuleForm
+        existing={mod}
+        dayOptions={dayOptions}
+        initialDayIds={initialDayIds}
+        locationOptions={locationOptions}
+        initialLocationIds={initialLocationIds}
+      />
     </div>
   );
 }
