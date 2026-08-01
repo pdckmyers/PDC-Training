@@ -256,7 +256,8 @@ export default function ModuleForm({
         <div className="max-h-48 overflow-y-auto rounded-md border border-stone-300 p-2">
           {dayOptions.length === 0 && (
             <p className="p-2 text-sm text-stone-500">
-              No day folders exist yet — this will be a general module.
+              No day folders exist yet — this will be a Master Your Craft
+              module.
             </p>
           )}
           {dayOptions.map((day) => (
@@ -278,7 +279,7 @@ export default function ModuleForm({
           Check every day this module should appear in — checking more than
           one shares the same content across departments, so editing it here
           updates everywhere it&rsquo;s checked. Leave everything unchecked
-          for a general module visible to every employee.
+          for a Master Your Craft module visible to every employee.
         </p>
       </div>
 

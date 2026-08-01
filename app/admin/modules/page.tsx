@@ -52,7 +52,7 @@ export default async function AdminModulesPage() {
           href="/admin/modules/new"
           className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"
         >
-          New general module
+          New Master Your Craft module
         </Link>
       </div>
       <p className="mb-6 text-sm text-stone-500">

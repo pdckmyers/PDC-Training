@@ -114,7 +114,7 @@ export default async function ModulesPage() {
       <div>
         {days.length > 0 && (
           <h2 className="mb-3 text-lg font-semibold text-stone-900">
-            General
+            Master Your Craft
           </h2>
         )}
 

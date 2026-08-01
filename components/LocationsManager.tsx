@@ -68,7 +68,7 @@ export default function LocationsManager({
   }
 
   async function deleteLocation(id: string) {
-    if (!confirm("Delete this location and all its departments? Modules under those departments become general (visible to everyone) instead of being deleted.")) return;
+    if (!confirm("Delete this location and all its departments? Modules under those departments become Master Your Craft modules (visible to everyone) instead of being deleted.")) return;
 
     const { error } = await supabase.from("locations").delete().eq("id", id);
     if (error) {
@@ -82,7 +82,7 @@ export default function LocationsManager({
   }
 
   async function deleteDepartment(id: string) {
-    if (!confirm("Delete this department? Its modules become general (visible to everyone) instead of being deleted.")) return;
+    if (!confirm("Delete this department? Its modules become Master Your Craft modules (visible to everyone) instead of being deleted.")) return;
 
     const { error } = await supabase.from("departments").delete().eq("id", id);
     if (error) {

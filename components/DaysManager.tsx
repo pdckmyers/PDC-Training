@@ -48,7 +48,7 @@ export default function DaysManager({
   async function deleteDay(id: string) {
     if (
       !confirm(
-        "Delete this day? Its modules become general (visible to everyone) instead of being deleted."
+        "Delete this day? Its modules become Master Your Craft modules (visible to everyone) instead of being deleted."
       )
     )
       return;

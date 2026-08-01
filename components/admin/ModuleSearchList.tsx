@@ -50,7 +50,7 @@ export default function ModuleSearchList({
                 <h2 className="font-medium text-stone-900">{mod.title}</h2>
                 <p className="mt-0.5 text-sm text-stone-500">
                   {mod.labels.length === 0
-                    ? "General — all employees"
+                    ? "Master Your Craft — all employees"
                     : mod.labels.join(" · ")}
                   {" · "}
                   {mod.quiz.length} question{mod.quiz.length === 1 ? "" : "s"}
