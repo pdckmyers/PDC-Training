@@ -186,24 +186,44 @@ export default function TeamManager({
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    {profile.role === "hire" && (
-                      <button
-                        onClick={() => setRole(profile.id, "manager")}
-                        disabled={updatingId === profile.id}
-                        className="text-xs font-medium text-brand-dark hover:underline disabled:opacity-60"
-                      >
-                        Make manager
-                      </button>
-                    )}
-                    {profile.role === "manager" && (
-                      <button
-                        onClick={() => setRole(profile.id, "hire")}
-                        disabled={updatingId === profile.id}
-                        className="text-xs font-medium text-stone-500 hover:underline disabled:opacity-60"
-                      >
-                        Make employee
-                      </button>
-                    )}
+                    <div className="flex flex-wrap gap-3">
+                      {profile.role === "hire" && (
+                        <button
+                          onClick={() => setRole(profile.id, "manager")}
+                          disabled={updatingId === profile.id}
+                          className="text-xs font-medium text-brand-dark hover:underline disabled:opacity-60"
+                        >
+                          Make manager
+                        </button>
+                      )}
+                      {profile.role === "manager" && (
+                        <button
+                          onClick={() => setRole(profile.id, "hire")}
+                          disabled={updatingId === profile.id}
+                          className="text-xs font-medium text-stone-500 hover:underline disabled:opacity-60"
+                        >
+                          Make employee
+                        </button>
+                      )}
+                      {profile.role === "admin" && (
+                        <button
+                          onClick={() => setRole(profile.id, "hire")}
+                          disabled={updatingId === profile.id}
+                          className="text-xs font-medium text-stone-500 hover:underline disabled:opacity-60"
+                        >
+                          Make employee
+                        </button>
+                      )}
+                      {profile.role !== "admin" && (
+                        <button
+                          onClick={() => setRole(profile.id, "admin")}
+                          disabled={updatingId === profile.id}
+                          className="text-xs font-medium text-brand-dark hover:underline disabled:opacity-60"
+                        >
+                          Make admin
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );
