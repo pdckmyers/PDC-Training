@@ -103,11 +103,13 @@ export default function PagedBody({
   moduleId,
   quiz,
   existingCompletion,
+  backHref,
 }: {
   pages: string[];
   moduleId: string;
   quiz: QuizQuestion[];
   existingCompletion: Completion | null;
+  backHref: string;
 }) {
   const [index, setIndex] = useState(0);
   const onQuiz = index === pages.length;
@@ -144,6 +146,7 @@ export default function PagedBody({
             moduleId={moduleId}
             quiz={quiz}
             existingCompletion={existingCompletion}
+            backHref={backHref}
           />
         </div>
       </>
@@ -160,6 +163,7 @@ export default function PagedBody({
             moduleId={moduleId}
             quiz={quiz}
             existingCompletion={existingCompletion}
+            backHref={backHref}
           />
         ) : (
           <div
