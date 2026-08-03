@@ -67,6 +67,13 @@ export function sanitizeModuleBody(html: string): string {
       h5: "p",
       h6: "p",
     },
+    // Pasting an image straight from Word/Google Docs/a screenshot embeds
+    // it as a data: URI, which the https-only rule above strips down to a
+    // bare `<img>` with no src -- rather than dropping the picture, that
+    // leaves an empty image behind, which renders as a broken-image icon
+    // next to the real one. Drop the tag entirely once it has nothing left
+    // to point at.
+    exclusiveFilter: (frame) => frame.tag === "img" && !frame.attribs.src,
   });
 }
 
