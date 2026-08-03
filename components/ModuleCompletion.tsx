@@ -16,10 +16,12 @@ export default function ModuleCompletion({
   moduleId,
   quiz,
   existingCompletion,
+  backHref,
 }: {
   moduleId: string;
   quiz: QuizQuestion[];
   existingCompletion: Completion | null;
+  backHref: string;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -74,6 +76,13 @@ export default function ModuleCompletion({
       return;
     }
 
+    // A passed quiz (or a no-quiz module) is done -- take the employee back
+    // to the folder they came from instead of leaving them stranded on the
+    // module page. A failed quiz stays put so they can see their score and
+    // retry.
+    if (score === null || isPassing(score, total ?? 0)) {
+      router.push(backHref);
+    }
     router.refresh();
   }
 

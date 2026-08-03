@@ -70,7 +70,7 @@ export default async function HireDayPage({
           return (
             <li key={mod.id}>
               <Link
-                href={`/modules/${mod.id}`}
+                href={`/modules/${mod.id}?from=/modules/days/${dayId}`}
                 className="flex items-center justify-between rounded-lg border border-stone-200 bg-white px-5 py-4 hover:border-brand"
               >
                 <div>

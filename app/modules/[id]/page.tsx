@@ -8,10 +8,17 @@ import PrintButton from "@/components/PrintButton";
 
 export default async function ModuleDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const { id } = await params;
+  const { from } = await searchParams;
+  // Only ever send someone back into the training area itself -- `from` is
+  // attacker-controlled via the URL, so an unchecked value here would be an
+  // open redirect.
+  const backHref = from && from.startsWith("/modules") ? from : "/modules";
   const supabase = await createClient();
   const {
     data: { user },
@@ -80,6 +87,7 @@ export default async function ModuleDetailPage({
         moduleId={mod.id}
         quiz={mod.quiz}
         existingCompletion={completion ?? null}
+        backHref={backHref}
       />
     </div>
   );
