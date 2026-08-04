@@ -5,7 +5,7 @@ import ModuleCompletion from "./ModuleCompletion";
 import type { Completion, QuizQuestion } from "@/lib/types";
 
 const PROSE_CLASSES =
-  "font-serif text-lg leading-relaxed text-brand-ink overflow-x-auto [&_div]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1 [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-lg [&_img]:border [&_img]:border-stone-200 [&_p]:mb-4 [&_table]:my-4 [&_table]:w-[800px] [&_table]:table-fixed [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:rounded-lg [&_table]:border [&_table]:border-stone-300 [&_table]:break-inside-avoid [&_th]:border [&_th]:border-stone-300 [&_th]:bg-brand [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_th]:text-white [&_td]:border [&_td]:border-stone-300 [&_td]:px-4 [&_td]:py-2 [&_td]:align-top [&_td]:break-words [&_td[rowspan]]:align-middle" +
+  "font-serif text-lg leading-relaxed text-brand-ink overflow-x-auto [&_div]:mb-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mt-1 [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-lg [&_img]:border [&_img]:border-stone-200 [&_video]:my-4 [&_video]:max-w-full [&_video]:rounded-lg [&_video]:border [&_video]:border-stone-200 [&_iframe]:my-4 [&_iframe]:aspect-video [&_iframe]:w-full [&_iframe]:rounded-lg [&_iframe]:border [&_iframe]:border-stone-200 [&_p]:mb-4 [&_table]:my-4 [&_table]:w-[800px] [&_table]:table-fixed [&_table]:border-collapse [&_table]:overflow-hidden [&_table]:rounded-lg [&_table]:border [&_table]:border-stone-300 [&_table]:break-inside-avoid [&_th]:border [&_th]:border-stone-300 [&_th]:bg-brand [&_th]:px-4 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_th]:text-white [&_td]:border [&_td]:border-stone-300 [&_td]:px-4 [&_td]:py-2 [&_td]:align-top [&_td]:break-words [&_td[rowspan]]:align-middle" +
   // A printed table's height is dominated by the screen-sized photo and
   // roomy padding/type -- neither of which a reader needs on paper. That
   // height is also why two rarely fit on one printed sheet today: once the
@@ -29,7 +29,9 @@ const PROSE_CLASSES =
   // the max-height below -- height:auto with a fixed width means capping
   // height alone (without freeing width to shrink with it) squashes the
   // image instead of scaling it.
-  " print:text-xs print:leading-snug print:[&_table]:my-1 print:[&_table]:w-full print:[&_col]:!w-auto print:[&_th]:px-2 print:[&_th]:py-0.5 print:[&_td]:px-2 print:[&_td]:py-0.5 print:[&_img]:my-0.5 print:[&_img]:!w-auto print:[&_img]:max-h-[120px]";
+  // A video can't print, so it's dropped from the printed page entirely
+  // rather than left as a dead, empty-looking box.
+  " print:text-xs print:leading-snug print:[&_table]:my-1 print:[&_table]:w-full print:[&_col]:!w-auto print:[&_th]:px-2 print:[&_th]:py-0.5 print:[&_td]:px-2 print:[&_td]:py-0.5 print:[&_img]:my-0.5 print:[&_img]:!w-auto print:[&_img]:max-h-[120px] print:[&_video]:hidden print:[&_iframe]:hidden";
 
 // Tables are authored at a fixed "designed" width (matching PROSE_CLASSES'
 // [&_table]:w-[800px] above) so their columns/image/text always keep the
