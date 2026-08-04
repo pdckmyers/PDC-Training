@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import type { Location, ManagerLocation, Profile, Role } from "@/lib/types";
+import type { Department, Location, ManagerLocation, Profile, Role } from "@/lib/types";
 
 const ROLE_LABEL: Record<Role, string> = {
   hire: "Employee",
@@ -14,10 +14,12 @@ const ROLE_LABEL: Record<Role, string> = {
 export default function TeamManager({
   initialProfiles,
   locations,
+  departments,
   initialManagerLocations,
 }: {
   initialProfiles: Profile[];
   locations: Location[];
+  departments: Department[];
   initialManagerLocations: ManagerLocation[];
 }) {
   const router = useRouter();
@@ -29,6 +31,8 @@ export default function TeamManager({
   );
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  const locationNameById = new Map(locations.map((loc) => [loc.id, loc.name]));
 
   async function setRole(id: string, role: Role) {
     setUpdatingId(id);
@@ -47,6 +51,28 @@ export default function TeamManager({
     }
 
     setProfiles((prev) => prev.map((p) => (p.id === id ? { ...p, role } : p)));
+    router.refresh();
+  }
+
+  async function setDepartment(id: string, departmentId: string | null) {
+    setUpdatingId(id);
+    setError(null);
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ department_id: departmentId })
+      .eq("id", id);
+
+    setUpdatingId(null);
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
+
+    setProfiles((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, department_id: departmentId } : p))
+    );
     router.refresh();
   }
 
@@ -113,6 +139,9 @@ export default function TeamManager({
               <th className="px-4 py-3 font-medium text-stone-700">Email</th>
               <th className="px-4 py-3 font-medium text-stone-700">Role</th>
               <th className="px-4 py-3 font-medium text-stone-700">
+                Department
+              </th>
+              <th className="px-4 py-3 font-medium text-stone-700">
                 Locations
               </th>
               <th className="px-4 py-3 font-medium text-stone-700"></th>
@@ -147,6 +176,29 @@ export default function TeamManager({
                     >
                       {ROLE_LABEL[profile.role]}
                     </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    {profile.role === "hire" ? (
+                      <select
+                        value={profile.department_id ?? ""}
+                        onChange={(e) =>
+                          setDepartment(profile.id, e.target.value || null)
+                        }
+                        disabled={updatingId === profile.id}
+                        className="rounded-md border border-stone-300 bg-white px-2 py-1 text-sm text-stone-800 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand disabled:opacity-60"
+                      >
+                        <option value="">Not assigned</option>
+                        {departments.map((dept) => (
+                          <option key={dept.id} value={dept.id}>
+                            {[locationNameById.get(dept.location_id), dept.name]
+                              .filter(Boolean)
+                              .join(" — ")}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="text-stone-400">—</span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     {profile.role === "manager" ? (
