@@ -13,6 +13,8 @@ const ALLOWED_TAGS = [
   "p",
   "div",
   "img",
+  "video",
+  "iframe",
   "table",
   "colgroup",
   "col",
@@ -23,19 +25,31 @@ const ALLOWED_TAGS = [
   "td",
 ];
 
+// An <iframe> can load a whole page from wherever its src points, unlike
+// <img>/<video> (which just fetch media, no script execution risk) -- so
+// https:// alone isn't a tight enough leash for it. Restrict it to the
+// exact embed-URL shapes lib/video.ts's toYoutubeEmbed/toVimeoEmbed
+// produce, the only iframes the editor's own "Video" button ever inserts.
+const TRUSTED_IFRAME_SRC =
+  /^https:\/\/(www\.youtube\.com\/embed\/|player\.vimeo\.com\/video\/)[^"'\s]*$/;
+
 export function sanitizeModuleBody(html: string): string {
   return sanitizeHtml(html, {
     allowedTags: ALLOWED_TAGS,
     allowedAttributes: {
       img: ["src", "alt", "style"],
+      video: ["src", "controls"],
+      iframe: ["src", "title", "allowfullscreen"],
       th: ["colspan"],
       td: ["colspan", "rowspan"],
       col: ["style"],
     },
-    // Only allow https:// image sources -- blocks javascript:/data: URI
+    // Only allow https:// sources -- blocks javascript:/data: URI
     // injection through a crafted src attribute.
     allowedSchemesByTag: {
       img: ["https"],
+      video: ["https"],
+      iframe: ["https"],
     },
     // Admins can resize an inserted image to small/medium/large -- that's
     // stored as an inline width. Only "width", and only a plain px/%
@@ -72,8 +86,14 @@ export function sanitizeModuleBody(html: string): string {
     // bare `<img>` with no src -- rather than dropping the picture, that
     // leaves an empty image behind, which renders as a broken-image icon
     // next to the real one. Drop the tag entirely once it has nothing left
-    // to point at.
-    exclusiveFilter: (frame) => frame.tag === "img" && !frame.attribs.src,
+    // to point at. Same idea for a <video> with its src stripped. An
+    // <iframe> whose src isn't one of the trusted embed URLs gets dropped
+    // outright rather than left srcless, since an emptied iframe has no
+    // legitimate use the way an emptied img/video placeholder might.
+    exclusiveFilter: (frame) =>
+      (frame.tag === "img" && !frame.attribs.src) ||
+      (frame.tag === "video" && !frame.attribs.src) ||
+      (frame.tag === "iframe" && !TRUSTED_IFRAME_SRC.test(frame.attribs.src ?? "")),
   });
 }
 
