@@ -1,7 +1,11 @@
 import { createServerClient, type SetAllCookies } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/signup", "/join"];
+const PUBLIC_PATHS = ["/login", "/signup", "/join", "/reset-password"];
+// Paths where a signed-in user should be bounced to /modules. Excludes
+// /reset-password so a password-recovery link still works even if the
+// browser already holds a stale session cookie.
+const REDIRECT_IF_AUTHENTICATED = ["/login", "/signup", "/join"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -58,7 +62,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  if (user && isPublic) {
+  if (user && REDIRECT_IF_AUTHENTICATED.some((p) => path.startsWith(p))) {
     const url = request.nextUrl.clone();
     url.pathname = "/modules";
     return NextResponse.redirect(url);

@@ -73,6 +73,12 @@ export default function LoginPage() {
             className="rounded-md border border-stone-300 px-3 py-2 text-stone-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
           />
         </label>
+        <Link
+          href="/reset-password"
+          className="-mt-2 self-end text-sm text-brand-dark underline"
+        >
+          Forgot password?
+        </Link>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
           type="submit"
