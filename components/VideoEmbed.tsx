@@ -1,4 +1,10 @@
-import { detectVideoKind, toYoutubeEmbed, toVimeoEmbed, withAutoplay } from "@/lib/video";
+import {
+  detectVideoKind,
+  toYoutubeEmbed,
+  toVimeoEmbed,
+  toDirectFileUrl,
+  withAutoplay,
+} from "@/lib/video";
 
 export default function VideoEmbed({
   url,
@@ -53,7 +59,7 @@ export default function VideoEmbed({
         // staying paused. The viewer can unmute from the controls.
         muted={autoPlay}
         className="w-full rounded-lg border border-stone-200"
-        src={url}
+        src={toDirectFileUrl(url)}
       />
     );
   }
