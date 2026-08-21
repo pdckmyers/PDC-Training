@@ -18,7 +18,7 @@ export default function WelcomeVideoModal({ videoUrl }: { videoUrl: string }) {
 
   if (!open) return null;
 
-  async function handleContinue() {
+  async function handleClose() {
     setDismissing(true);
     const {
       data: { user },
@@ -36,24 +36,17 @@ export default function WelcomeVideoModal({ videoUrl }: { videoUrl: string }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/70 p-4">
-      <div className="flex w-full max-w-2xl flex-col gap-4 rounded-lg bg-white p-6 shadow-xl">
-        <div>
-          <h2 className="text-xl font-semibold text-stone-900">
-            Welcome to PDC Training
-          </h2>
-          <p className="mt-1 text-sm text-stone-600">
-            Take a minute to watch this before you get started.
-          </p>
-        </div>
-        <VideoEmbed url={videoUrl} autoPlay />
+      <div className="relative w-full max-w-2xl">
         <button
           type="button"
-          onClick={handleContinue}
+          onClick={handleClose}
           disabled={dismissing}
-          className="self-end rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+          aria-label="Close"
+          className="absolute -top-4 -right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white text-lg leading-none text-stone-700 shadow-lg hover:bg-stone-100 disabled:opacity-60"
         >
-          {dismissing ? "Continuing..." : "Continue"}
+          &times;
         </button>
+        <VideoEmbed url={videoUrl} autoPlay />
       </div>
     </div>
   );
