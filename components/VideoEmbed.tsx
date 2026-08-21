@@ -1,6 +1,13 @@
-import { detectVideoKind, toYoutubeEmbed, toVimeoEmbed } from "@/lib/video";
+import { detectVideoKind, toYoutubeEmbed, toVimeoEmbed, withAutoplay } from "@/lib/video";
 
-export default function VideoEmbed({ url }: { url: string }) {
+export default function VideoEmbed({
+  url,
+  autoPlay = false,
+}: {
+  url: string;
+  /** Starts the video immediately instead of waiting for a click. */
+  autoPlay?: boolean;
+}) {
   const kind = detectVideoKind(url);
 
   if (kind === "youtube") {
@@ -9,7 +16,7 @@ export default function VideoEmbed({ url }: { url: string }) {
     return (
       <div className="aspect-video w-full overflow-hidden rounded-lg border border-stone-200">
         <iframe
-          src={embedUrl}
+          src={autoPlay ? withAutoplay(embedUrl) : embedUrl}
           className="h-full w-full"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
@@ -25,7 +32,7 @@ export default function VideoEmbed({ url }: { url: string }) {
     return (
       <div className="aspect-video w-full overflow-hidden rounded-lg border border-stone-200">
         <iframe
-          src={embedUrl}
+          src={autoPlay ? withAutoplay(embedUrl) : embedUrl}
           className="h-full w-full"
           allow="autoplay; fullscreen; picture-in-picture"
           allowFullScreen
@@ -39,6 +46,12 @@ export default function VideoEmbed({ url }: { url: string }) {
     return (
       <video
         controls
+        autoPlay={autoPlay}
+        // Browsers block autoplay-with-sound on a plain <video> element
+        // outright (unlike an iframe granted allow="autoplay") -- muted
+        // is what makes the autoplay actually happen instead of silently
+        // staying paused. The viewer can unmute from the controls.
+        muted={autoPlay}
         className="w-full rounded-lg border border-stone-200"
         src={url}
       />

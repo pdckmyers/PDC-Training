@@ -45,7 +45,7 @@ export default function WelcomeVideoModal({ videoUrl }: { videoUrl: string }) {
             Take a minute to watch this before you get started.
           </p>
         </div>
-        <VideoEmbed url={videoUrl} />
+        <VideoEmbed url={videoUrl} autoPlay />
         <button
           type="button"
           onClick={handleContinue}

@@ -23,3 +23,12 @@ export function toVimeoEmbed(url: string): string | null {
   if (match) return `https://player.vimeo.com/video/${match[1]}`;
   return null;
 }
+
+/**
+ * Adds autoplay=1 to an embed URL, respecting whatever query string (if
+ * any) is already there -- e.g. an admin who pasted a youtube.com/embed/
+ * URL that already has its own params.
+ */
+export function withAutoplay(embedUrl: string): string {
+  return `${embedUrl}${embedUrl.includes("?") ? "&" : "?"}autoplay=1`;
+}
