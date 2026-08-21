@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { getAllDayOptions, getDayBreadcrumb } from "@/lib/days";
 import ModuleForm from "@/components/ModuleForm";
 
@@ -17,6 +18,12 @@ export default async function NewModuleInDayPage({
 
   return (
     <div>
+      <Link
+        href={breadcrumb.href}
+        className="mb-2 inline-block text-sm text-brand-dark hover:underline"
+      >
+        ← {breadcrumb.label}
+      </Link>
       <h1 className="mb-6 text-2xl font-semibold text-stone-900">
         New module
       </h1>

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { Module } from "@/lib/types";
 import { getAllDayOptions, getModuleDayIds } from "@/lib/days";
@@ -31,6 +32,12 @@ export default async function EditModulePage({
 
   return (
     <div>
+      <Link
+        href="/admin/modules"
+        className="mb-2 inline-block text-sm text-brand-dark hover:underline"
+      >
+        ← Manage modules
+      </Link>
       <h1 className="mb-6 text-2xl font-semibold text-stone-900">
         Edit module
       </h1>

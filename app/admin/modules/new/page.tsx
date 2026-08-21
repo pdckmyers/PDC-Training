@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getAllDayOptions } from "@/lib/days";
 import { getAllLocationOptions } from "@/lib/locations";
 import ModuleForm from "@/components/ModuleForm";
@@ -10,6 +11,12 @@ export default async function NewModulePage() {
 
   return (
     <div>
+      <Link
+        href="/admin/modules"
+        className="mb-2 inline-block text-sm text-brand-dark hover:underline"
+      >
+        ← Manage modules
+      </Link>
       <h1 className="mb-6 text-2xl font-semibold text-stone-900">
         New module
       </h1>
