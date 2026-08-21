@@ -61,6 +61,7 @@ export default function ModuleForm({
 
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function updateQuestion(qi: number, patch: Partial<QuizQuestion>) {
@@ -212,6 +213,46 @@ export default function ModuleForm({
 
     setSaving(false);
     router.push(backHref);
+    router.refresh();
+  }
+
+  async function handleDuplicate() {
+    if (!existing) return;
+
+    setError(null);
+    setDuplicating(true);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const { data: inserted, error } = await supabase
+      .from("modules")
+      .insert({
+        title: `${existing.title} (Copy)`,
+        description: existing.description,
+        body: existing.body,
+        image_url: existing.image_url,
+        video_url: existing.video_url,
+        sort_order: existing.sort_order,
+        // Always start the copy as an unpublished, unlinked draft so it
+        // doesn't show up live -- or alongside the original -- until
+        // someone reviews it and checks it into a day/location.
+        published: false,
+        quiz: existing.quiz,
+        created_by: user!.id,
+      })
+      .select()
+      .single<Module>();
+
+    setDuplicating(false);
+
+    if (error || !inserted) {
+      setError(error?.message ?? "Could not duplicate module");
+      return;
+    }
+
+    router.push(`/admin/modules/${inserted.id}/edit`);
     router.refresh();
   }
 
@@ -476,6 +517,17 @@ export default function ModuleForm({
           >
             View live ↗
           </Link>
+        )}
+        {existing && (
+          <button
+            type="button"
+            onClick={handleDuplicate}
+            disabled={duplicating}
+            title="Creates an unpublished copy you can edit and check into a different day or location"
+            className="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50 disabled:opacity-60"
+          >
+            {duplicating ? "Duplicating..." : "Duplicate module"}
+          </button>
         )}
         {existing && (
           <button
