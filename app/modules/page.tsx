@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getAppSettings } from "@/lib/settings";
 import type { Completion, Day, Module, Profile } from "@/lib/types";
+import WelcomeVideoModal from "@/components/WelcomeVideoModal";
 
 export default async function ModulesPage() {
   const supabase = await createClient();
@@ -13,6 +15,10 @@ export default async function ModulesPage() {
     .select("*")
     .eq("id", user!.id)
     .single<Profile>();
+
+  const settings = await getAppSettings();
+  const showWelcomeVideo =
+    !profile?.welcome_video_seen_at && !!settings?.welcome_video_url;
 
   const [{ data: publishedModules }, { data: allLinks }, { data: locationLinks }] =
     await Promise.all([
@@ -97,6 +103,9 @@ export default async function ModulesPage() {
 
   return (
     <div className="flex flex-col gap-10">
+      {showWelcomeVideo && (
+        <WelcomeVideoModal videoUrl={settings!.welcome_video_url!} />
+      )}
       <div>
         <h1 className="mb-1 text-2xl font-semibold text-stone-900">
           Training

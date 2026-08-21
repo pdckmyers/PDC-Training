@@ -6,7 +6,14 @@ export interface Profile {
   full_name: string | null;
   role: Role;
   department_id: string | null;
+  welcome_video_seen_at: string | null;
   created_at: string;
+}
+
+export interface AppSettings {
+  id: true;
+  welcome_video_url: string | null;
+  updated_at: string;
 }
 
 export interface Location {

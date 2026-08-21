@@ -56,6 +56,12 @@ export default async function Nav() {
                 >
                   Team
                 </Link>
+                <Link
+                  href="/admin/settings"
+                  className="whitespace-nowrap text-sm text-stone-600 hover:text-stone-900"
+                >
+                  Settings
+                </Link>
               </>
             )}
             {(isAdmin || isManager) && (
