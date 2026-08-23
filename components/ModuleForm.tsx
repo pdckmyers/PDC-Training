@@ -509,6 +509,12 @@ export default function ModuleForm({
         >
           {saving ? "Saving..." : existing ? "Save changes" : "Create module"}
         </button>
+        <Link
+          href={backHref}
+          className="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50"
+        >
+          Cancel
+        </Link>
         {existing && (
           <Link
             href={`/modules/${existing.id}`}
