@@ -312,7 +312,7 @@ export default function RichTextEditor({
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-1 rounded-t-md border border-b-0 border-stone-300 bg-stone-50 p-1">
+      <div className="sticky top-0 z-20 flex flex-wrap items-center gap-1 rounded-t-md border border-b-0 border-stone-300 bg-stone-50 p-1">
         <ToolbarButton command="bold" label={<strong>B</strong>} title="Bold" />
         <ToolbarButton command="italic" label={<em>I</em>} title="Italic" />
         <ToolbarButton
