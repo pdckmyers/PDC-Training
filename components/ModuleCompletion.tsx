@@ -190,7 +190,7 @@ export default function ModuleCompletion({
             {q.options.map((opt, oi) => (
               <label
                 key={oi}
-                className="flex items-center gap-2 text-sm text-stone-700"
+                className="flex items-center gap-2 text-base text-stone-700"
               >
                 <input
                   type="radio"
